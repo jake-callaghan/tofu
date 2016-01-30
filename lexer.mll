@@ -1,15 +1,56 @@
+(* lexer.mll *)
+
 {
-	open Parser (* token type is defined in parser.mli *)
+	open Keiko
+	open Parser
+	open Tree
+	open Lexing
 	exception Eof
+
+let lineno = ref 1
+
 }
-rule token = parse 
-	  [' ' '\t']			{token lexbuf}
-	| ['\n']				{ EOL }
-	| ['0' - '9']+ as lxm   { INT(int_of_string lxm) }
-	| '+'					{ PLUS }
-	| '-'					{ MINUS }
-	| '*'					{ TIMES }
-	| '/'					{ DIV }
-	| '('					{ LPAREN }
-    | ')' 					{ RPAREN }
-    | eof 					{ raise Eof }
+
+rule token = parse
+	  [' ' '\t']		{token lexbuf}
+	| ['0'-'9']+ as s 	{ NUMBER (int_of_string s) }
+	| "main"			{ MAIN }
+	| "class"			{ CLASS }
+	| "extends"			{ EXTENDS }
+	| "var"				{ VAR }
+	| "def"				{ DEF }
+	| "return" 			{ RETURN }
+	| "print" 			{ PRINT }
+	| "new"				{ NEW }
+	| "while"			{ WHILE }
+	| "if"				{ IF }
+	| "else"			{ ELSE }
+	| "."				{ DOT }
+	| ","				{ COMMNA }
+	| "{"				{ LCURL }
+	| "}"				{ RCURL }
+	| ";"				{ SEMI }
+	| ":"				{ COLON }
+	| "("				{ LBRAC }
+	| ")"				{ RBRAC }
+	| "="				{ ASSIGN }
+	| "=="				{ EQUALS }
+	| "+"				{ ADDOP Plus }
+	| "-"				{ MINUS }
+	| "*"               { MULOP Times }
+    | "<"               { RELOP Lt }
+    | ">"               { RELOP Gt }
+    | "<>"              { RELOP Neq }
+    | "<="              { RELOP Leq }
+    | ">="              { RELOP Geq }
+	| "(*"				{ comment lexbuf; token lexbuf }
+	| "\n"				{ incr lineno; Source.note_line !lineno lexbuf; token lexbuf }
+	| eof 				{ EOF }
+	| _ 				{ BADTOK }
+
+and comment = parse 
+	  "*)"				{ () }
+	| "\n" 				{ incr lineno; Source.note_line; !lineno lexbuf; comment lexbuf }
+	| _					{ comment lexbuf }
+	| eof 				{ () }	
+

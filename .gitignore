@@ -1,3 +1,9 @@
+# an example parser/lexer
+calc/
+
+# an example from the compilers course
+lab2/
+
 *.annot
 *.cmo
 *.cma
