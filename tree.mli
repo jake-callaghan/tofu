@@ -4,62 +4,68 @@ open Env
 
 (** |class_desc| *)
 type class_desc = 
-  { name : string;                                 (* name of the class *)
+  { class_name : string;                           (* name of the class *)
     parent_name : string;                          (* name of the parent class *) 
     mutable methods_list : method_desc list;       (* list of class' method names  *)
     mutable variables_list : variable_desc list }  (* list of class' field names   *)
 
-val classDesc : string -> string -> class_desc
-
 (** |method_desc| *)
-type method_desc = 
-  { name : string;                          (* the method name *)
-    mutable def : env_def option }          (* environmental defintion *)
-
-val methodDesc : string -> method_desc
+and method_desc = 
+  { method_name : string;                   (* the method name *)
+    return_type : string;                   (* name of class type returned *)
+    mutable method_def : env_def option }   (* environmental defintion *)
 
 (** |variable_desc| *)
-type variable_desc = 
-  { name : string;                          (* the variables' name *)  
-    mutable def : env_def option }          (* environmental definition *)
+and variable_desc = 
+  { variable_name : string;                 (* the variables' name *)  
+    variable_type : string;                 (* the variables' static type *)
+    mutable variable_def : env_def option } (* environmental definition *)
 
-val variableDesc : string -> variable_desc
+val classDesc : string -> string -> class_desc
+val methodDesc : string -> string -> method_desc
+val variableDesc : string -> string -> variable_desc
 
 (** |expr_desc| *)
 type expr_desc = 
   { guts : expr;                            (* the actual expression *)
-    mutable ctype : string option }         (* the annotated type's class name *)
-
-val exprDesc : expr -> expr_desc
+    mutable expression_type : string option }         (* the annotated type's class name *)
 
 (** |expr| type representing expressible values *)
 and expr = 
     Number of int
-  | Variable of variable_desc
+  | Variable of string
   | Monop of Keiko.op * expr_desc
   | Binop of Keiko.op * expr_desc * expr_desc
-  | Call of variable_desc * method_desc * expr_desc list
+  | Call of string * string * expr_desc list
 
 (** |stmt| type representing statements *)
 and stmt =
     Skip
   | Seq of stmt list
-  | ClassDecl of class_desc * stmt list
-  | VarDecl of variable_desc * expr_desc
-  | Assign of variable_desc * expr_desc
-  | Return of expr_desc
+  | LocalVarDecl of variable_desc
+  | AssignStmt of string * expr_desc
+  | ReturnStmt of expr_desc
   | IfStmt of expr_desc * stmt * stmt
   | WhileStmt of expr_desc * stmt
-  | Print of expr_desc
+  | PrintStmt of expr_desc
   | Newline
 
-(** |decl| type representing class, method and variable declerations *)
-and decl = 
-    VarDecl of variable_desc 
-  | MethDecl of method_desc * stmt list
-  | ClassDecl of class_desc * decl list
-  | MainDecl of stmt list
+(** declerative types that define features of classes (vars and methods), classes and the main *)
+and feature_decl = 
+    ClassVarDecl of variable_desc
+  | MethDecl of method_desc * formal list * stmt list
 
-type program = Program of decl list 
+and formal = Formal of string * string
+
+and class_decl = ClassDecl of class_desc * feature_decl list
+
+and main_decl = MainDecl of stmt list
+
+val exprDesc : expr -> expr_desc
+
+type program = Program of main_decl * class_decl list
 
 val seq : stmt list -> stmt
+
+(* |print_tree| -- pretty-print a tree *)
+val print_tree : out_channel -> program -> unit

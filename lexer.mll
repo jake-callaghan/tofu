@@ -34,7 +34,7 @@ rule token = parse
 	| "("				{ LBRAC }
 	| ")"				{ RBRAC }
 	| "="				{ ASSIGN }
-	| "=="				{ EQUALS }
+	| "=="				{ RELOP Eq }
 	| "+"				{ ADDOP Plus }
 	| "-"				{ MINUS }
 	| "*"				{ MULOP Times }
