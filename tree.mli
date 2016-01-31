@@ -53,13 +53,13 @@ and stmt =
 (** declerative types that define features of classes (vars and methods), classes and the main *)
 and feature_decl = 
     ClassVarDecl of variable_desc
-  | MethDecl of method_desc * formal list * stmt list
+  | MethDecl of method_desc * formal list * stmt
 
 and formal = Formal of string * string
 
 and class_decl = ClassDecl of class_desc * feature_decl list
 
-and main_decl = MainDecl of stmt list
+and main_decl = MainDecl of stmt
 
 val exprDesc : expr -> expr_desc
 

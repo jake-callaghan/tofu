@@ -15,6 +15,7 @@ rule token = parse
 	  [' ' '\t']		{token lexbuf}
 	| ['0'-'9']+ as s   { NUMBER (int_of_string s) }
 	| "main"			{ MAIN }
+	| "Main"			{ MAIN }
 	| "class"			{ CLASS }
 	| "extends"			{ EXTENDS }
 	| "var"				{ VAR }

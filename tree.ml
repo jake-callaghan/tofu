@@ -58,13 +58,13 @@ and stmt =
 (** declerative types that define features of classes (vars and methods), classes and the main *)
 and feature_decl = 
     ClassVarDecl of variable_desc
-  | MethDecl of method_desc * formal list * stmt list
+  | MethDecl of method_desc * formal list * stmt 
 
 and formal = Formal of string * string
 
 and class_decl = ClassDecl of class_desc * feature_decl list
 
-and main_decl = MainDecl of stmt list
+and main_decl = MainDecl of stmt 
 
 type program = Program of main_decl * class_decl list
 
@@ -76,7 +76,7 @@ let seq = function
   | [s] -> s
   | ss -> Seq ss  
 
-(* Mike Spivey's Pretty printer *)
+(* Mike Spivey's Pretty printer with tofu AS constructs *)
 
 open Print
 
@@ -134,13 +134,13 @@ let rec fFeature =
         ClassVarDecl vd ->
           fMeta "ClassVarDecl_($, $)" [fStr vd.variable_name; fStr vd.variable_type]
       | MethDecl (md,fs,ss) ->
-          fMeta "MethDecl_($, $, $)" [fStr md.method_name; fList(fFormal) fs; fList(fStmt) ss]
+          fMeta "MethDecl_($, $, $)" [fStr md.method_name; fList(fFormal) fs; fStmt ss]
 
 let rec fClass (ClassDecl (cd,fs)) =
   fMeta "ClassDecl_($, $, $)" [fStr cd.class_name; fStr cd.parent_name; fList(fFeature) fs]
 
 let rec fMain (MainDecl ss) = 
-  fMeta "Main_($)" [fList(fStmt) ss]
+  fMeta "Main_($)" [fStmt ss]
 
 let print_tree fp (Program (main_decl,class_decls)) =
   fgrindf fp "" "Program_($, $)" [fMain main_decl; fList(fClass) class_decls]

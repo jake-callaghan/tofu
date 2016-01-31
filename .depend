@@ -1,0 +1,20 @@
+env.cmo : env.cmi
+env.cmx : env.cmi
+env.cmi :
+keiko.cmo : tree.cmi source.cmi print.cmi keiko.cmi
+keiko.cmx : tree.cmx source.cmx print.cmx keiko.cmi
+keiko.cmi :
+lexer.cmo : tree.cmi source.cmi parser.cmi keiko.cmi
+lexer.cmx : tree.cmx source.cmx parser.cmx keiko.cmx
+parser.cmo : tree.cmi keiko.cmi parser.cmi
+parser.cmx : tree.cmx keiko.cmx parser.cmi
+parser.cmi : tree.cmi keiko.cmi
+print.cmo : print.cmi
+print.cmx : print.cmi
+print.cmi :
+source.cmo : print.cmi source.cmi
+source.cmx : print.cmx source.cmi
+source.cmi : print.cmi
+tree.cmo : print.cmi keiko.cmi env.cmi tree.cmi
+tree.cmx : print.cmx keiko.cmx env.cmx tree.cmi
+tree.cmi : keiko.cmi env.cmi
