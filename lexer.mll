@@ -13,7 +13,7 @@ let lineno = ref 1
 
 rule token = parse
 	  [' ' '\t']		{token lexbuf}
-	| ['0'-'9']+ as s 	{ NUMBER (int_of_string s) }
+	| ['0'-'9']+ as s   { NUMBER (int_of_string s) }
 	| "main"			{ MAIN }
 	| "class"			{ CLASS }
 	| "extends"			{ EXTENDS }
@@ -37,12 +37,12 @@ rule token = parse
 	| "=="				{ EQUALS }
 	| "+"				{ ADDOP Plus }
 	| "-"				{ MINUS }
-	| "*"               { MULOP Times }
-    | "<"               { RELOP Lt }
-    | ">"               { RELOP Gt }
-    | "<>"              { RELOP Neq }
-    | "<="              { RELOP Leq }
-    | ">="              { RELOP Geq }
+	| "*"				{ MULOP Times }
+	| "<"				{ RELOP Lt }
+	| ">"				{ RELOP Gt }
+	| "<>"				{ RELOP Neq }
+	| "<="				{ RELOP Leq }
+	| ">="				{ RELOP Geq }
 	| "(*"				{ comment lexbuf; token lexbuf }
 	| "\n"				{ incr lineno; Source.note_line !lineno lexbuf; token lexbuf }
 	| eof 				{ EOF }
