@@ -1,8 +1,4 @@
-# an example parser/lexer
-calc_parser/
-
-# an example from the compilers course
-lab2/
+/calc_parser
 
 *.annot
 *.cmo
