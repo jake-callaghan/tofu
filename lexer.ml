@@ -249,7 +249,7 @@ let
 
   | 15 ->
 # 30 "lexer.mll"
-          ( COMMNA )
+          ( COMMA )
 # 254 "lexer.ml"
 
   | 16 ->
@@ -366,7 +366,7 @@ and __ocaml_lex_comment_rec lexbuf __ocaml_lex_state =
 
   | 1 ->
 # 54 "lexer.mll"
-            ( incr lineno; Source.note_line; !lineno lexbuf; comment lexbuf )
+            ( incr lineno; Source.note_line !lineno lexbuf; comment lexbuf )
 # 371 "lexer.ml"
 
   | 2 ->

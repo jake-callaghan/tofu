@@ -24,7 +24,9 @@
 %%
 
 program :
-	CLASS MAIN LCURL stmt_list RCURL class_decl_list { Program (MainDecl($4), $6) };
+	CLASS MAIN LCURL stmts RCURL class_decl_list { Program (MainDecl($4), $6) };
+
+/********* Declerations **********/
 
 class_decl_list :
 	  /* empty */										{ [] }
@@ -53,6 +55,8 @@ formal_list :
 formal :
 	IDENT COLON IDENT			    { Formal ($1, $3) };
 
+/*********** Statements ************/
+
 stmts :
 	stmt_list					    { seq $1 };
 
@@ -62,33 +66,35 @@ stmt_list :
 
 stmt :
 	  /* empty */					{ Skip }
-	| VAR IDENT COLON IDENT SEMI	{ LocalVarDecl (variableDesc $2 $4) };
-	| IDENT ASSIGN expr 			{ AssignStmt ($1, exprDesc $3) }
-	| RETURN expr 					{ ReturnStmt (exprDesc $2) }
-	| IF LBRAC expr RBRAC LCURL stmts RCURL	{ IfStmt (exprDesc $3, $6, Skip) }
-	| IF LBRAC expr RBRAC LCURL stmts RCURL ELSE LCURL stmts RCURL { IfStmt(exprDesc $3, $6, $10) }
-	| WHILE LBRAC expr RBRAC LCURL stmts RCURL { WhileStmt (exprDesc $3, $6) }
-	| PRINT expr 					{ PrintStmt (exprDesc $2) }
-	| NEWLINE 						{ NewLine };
+	| VAR IDENT COLON IDENT SEMI	{ LocalVarDecl (variableDesc $2 $4) }
+	| IDENT ASSIGN expr 			{ AssignStmt ($1, $3) }
+	| RETURN expr 					{ ReturnStmt $2 }
+	| IF LBRAC expr RBRAC LCURL stmts RCURL	{ IfStmt ($3, $6, Skip) }
+	| IF LBRAC expr RBRAC LCURL stmts RCURL ELSE LCURL stmts RCURL { IfStmt($3, $6, $10) }
+	| WHILE LBRAC expr RBRAC LCURL stmts RCURL { WhileStmt ($3, $6) }
+	| PRINT expr 					{ PrintStmt ($2) }
+	| NEWLINE 						{ Newline };
+
+/*********** Expressions ************/
 
 expr : 
-	  simple							{ $1 }
-	| expr RELOP simple					{ Binop ($2, exprDesc $1, exprDesc $3) };
+	  simple							{ exprDesc $1 }
+	| expr RELOP simple					{ exprDesc (Binop ($2, $1, $3)) };
 
 simple :
-	  term 								{ $1 }
-	| simple ADDOP term 				{ Binop ($2, exprDesc $1, exprDesc $3) }
-	| simple MINUS term					{ Binop (Minus, exprDesc $1, exprDesc $3) }
+	  term 								{ exprDesc $1 }
+	| simple ADDOP term 				{ Binop ($2, $1, $3) }
+	| simple MINUS term					{ Binop (Minus, $1, $3) }
 
 term :
-	  factor 							{ $1 }
-	| term MULOP factor 				{ Binop ($2, exprDesc $1, exprDesc $3) }
+	  factor 							{ exprDesc $1 }
+	| term MULOP factor 				{ Binop ($2, $1, $3) }
 
 factor :
-	  NUMBER							{ $1 }
+	  NUMBER							{ Number $1 }
 	| IDENT								{ Variable $1 }
 	| IDENT DOT IDENT args 				{ Call ($1, $3, $4) }
-	| MINUS factor						{ Monop (Uminus, exprDesc $2)}
+	| MINUS factor						{ Monop (Uminus, $2)}
 
 args : 
 	  LBRAC RBRAC 						{ [] }

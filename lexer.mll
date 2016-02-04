@@ -27,7 +27,7 @@ rule token = parse
 	| "if"				{ IF }
 	| "else"			{ ELSE }
 	| "."				{ DOT }
-	| ","				{ COMMNA }
+	| ","				{ COMMA }
 	| "{"				{ LCURL }
 	| "}"				{ RCURL }
 	| ";"				{ SEMI }
@@ -51,7 +51,7 @@ rule token = parse
 
 and comment = parse 
 	  "*)"				{ () }
-	| "\n" 				{ incr lineno; Source.note_line; !lineno lexbuf; comment lexbuf }
+	| "\n" 				{ incr lineno; Source.note_line !lineno lexbuf; comment lexbuf }
 	| _					{ comment lexbuf }
 	| eof 				{ () }	
 

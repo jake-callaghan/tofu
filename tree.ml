@@ -68,7 +68,7 @@ and main_decl = MainDecl of stmt
 
 type program = Program of main_decl * class_decl list
 
-let exprDesc e =                 (* creates an unannotated expr_desc *)
+let exprDesc e =                (* creates an unannotated expr_desc *)
   { guts = e; expression_type = None}
 
 let seq = function
