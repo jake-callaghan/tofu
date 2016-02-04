@@ -78,23 +78,24 @@ stmt :
 /*********** Expressions ************/
 
 expr : 
-	  simple							{ exprDesc $1 }
-	| expr RELOP simple					{ exprDesc (Binop ($2, $1, $3)) };
+	  simple							{ $1 }
+	| expr RELOP simple					{ exprDesc (Binop ($2, $1, $3)) }
+	| expr EQUALS simple				{ exprDesc (Binop (Eq, $1, $3)) };
 
 simple :
-	  term 								{ exprDesc $1 }
-	| simple ADDOP term 				{ Binop ($2, $1, $3) }
-	| simple MINUS term					{ Binop (Minus, $1, $3) }
+	  term 								{ $1 }
+	| simple ADDOP term 				{ exprDesc (Binop ($2, $1, $3)) }
+	| simple MINUS term					{ exprDesc (Binop (Minus, $1, $3)) };
 
 term :
-	  factor 							{ exprDesc $1 }
-	| term MULOP factor 				{ Binop ($2, $1, $3) }
+	  factor 							{ $1 }
+	| term MULOP factor 				{ exprDesc (Binop ($2, $1, $3)) };
 
 factor :
-	  NUMBER							{ Number $1 }
-	| IDENT								{ Variable $1 }
-	| IDENT DOT IDENT args 				{ Call ($1, $3, $4) }
-	| MINUS factor						{ Monop (Uminus, $2)}
+	  NUMBER							{ exprDesc (Number $1) }
+	| IDENT								{ exprDesc (Variable $1) }
+	| IDENT DOT IDENT args 				{ exprDesc (Call ($1, $3, $4)) }
+	| MINUS factor						{ exprDesc (Monop (Uminus, $2)) }
 
 args : 
 	  LBRAC RBRAC 						{ [] }
