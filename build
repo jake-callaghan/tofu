@@ -1,0 +1,33 @@
+#!/bin/bash
+echo "===== BUILDING TOFU COMPILER ====="
+
+echo " "
+echo "[cleaning directory]"
+echo " "
+rm -f *.cm*
+rm -f .depend
+
+echo "[generating dependendcies]"
+ocamldep * > .depend
+cat .depend
+
+echo " "
+echo "[beginning compilation]"
+echo " "
+
+ocamllex lexer.mll
+echo "[lexer built successfully]"
+
+ocamlyacc parser.mly
+echo " "
+echo "[parser built successfully]"
+
+ocamlc -c env.mli print.mli source.mli keiko.mli tree.mli parser.mli 
+echo " "
+echo "[interfaces built successfully]"
+
+echo " "
+ocamlc -c env.ml print.ml source.ml lexer.ml tree.ml parser.ml
+
+echo " "
+echo "[finished]"
