@@ -4,6 +4,9 @@ env.cmi :
 keiko.cmo : tree.cmi source.cmi print.cmi keiko.cmi
 keiko.cmx : tree.cmx source.cmx print.cmx keiko.cmi
 keiko.cmi :
+kgen.cmo : kgen.cmi
+kgen.cmx : kgen.cmi
+kgen.cmi : tree.cmi
 lexer.cmo : tree.cmi source.cmi parser.cmi keiko.cmi
 lexer.cmx : tree.cmx source.cmx parser.cmx keiko.cmx
 parser.cmo : tree.cmi keiko.cmi parser.cmi
@@ -15,6 +18,8 @@ print.cmi :
 source.cmo : print.cmi source.cmi
 source.cmx : print.cmx source.cmi
 source.cmi : print.cmi
+tofuc.cmo : tree.cmi source.cmi print.cmi parser.cmi lexer.cmo kgen.cmi
+tofuc.cmx : tree.cmx source.cmx print.cmx parser.cmx lexer.cmx kgen.cmx
 tree.cmo : print.cmi keiko.cmi env.cmi tree.cmi
 tree.cmx : print.cmx keiko.cmx env.cmx tree.cmi
 tree.cmi : keiko.cmi env.cmi

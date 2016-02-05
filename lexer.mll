@@ -46,6 +46,7 @@ rule token = parse
 	| ">="				{ RELOP Geq }
 	| "(*"				{ comment lexbuf; token lexbuf }
 	| "\n"				{ incr lineno; Source.note_line !lineno lexbuf; token lexbuf }
+	| ['A'-'Z''a'-'z']['A'-'Z''a'-'z''0'-'9''_']* as s { IDENT s }
 	| eof 				{ EOF }
 	| _ 				{ BADTOK }
 

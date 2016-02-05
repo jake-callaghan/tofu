@@ -4,7 +4,7 @@
 %token<int>	  		NUMBER
 /** keiko ops */
 %token<Keiko.op> 	MULOP ADDOP RELOP
-/** declerative */
+/** decleratives */
 %token 				MAIN CLASS EXTENDS NEW VAR DEF
 /** statements */
 %token 				WHILE IF ELSE PRINT LCURL RCURL ASSIGN RETURN
@@ -46,7 +46,7 @@ feature_decl :
 
 formals : 
 	  LBRAC RBRAC					{ [] }
-	| LBRAC formal_list			    { $2 };
+	| LBRAC formal_list	RBRAC	    { $2 };
 
 formal_list :
 	  formal 						{ [$1] }
@@ -66,19 +66,19 @@ stmt_list :
 
 stmt :
 	  /* empty */					{ Skip }
-	| VAR IDENT COLON IDENT SEMI	{ LocalVarDecl (variableDesc $2 $4) }
-	| IDENT ASSIGN expr 			{ AssignStmt ($1, $3) }
-	| RETURN expr 					{ ReturnStmt $2 }
+	| VAR IDENT COLON IDENT     	{ LocalVarDecl (variableDesc $2 $4) }
+	| IDENT ASSIGN expr      		{ AssignStmt ($1, $3) }
+	| RETURN expr        			{ ReturnStmt $2 }
 	| IF LBRAC expr RBRAC LCURL stmts RCURL	{ IfStmt ($3, $6, Skip) }
 	| IF LBRAC expr RBRAC LCURL stmts RCURL ELSE LCURL stmts RCURL { IfStmt($3, $6, $10) }
 	| WHILE LBRAC expr RBRAC LCURL stmts RCURL { WhileStmt ($3, $6) }
-	| PRINT expr 					{ PrintStmt ($2) }
+	| PRINT expr     				{ PrintStmt ($2) }
 	| NEWLINE 						{ Newline };
 
 /*********** Expressions ************/
 
-expr : 
-	  simple							{ $1 }
+expr :
+	| simple							{ $1 }
 	| expr RELOP simple					{ exprDesc (Binop ($2, $1, $3)) }
 	| expr EQUALS simple				{ exprDesc (Binop (Eq, $1, $3)) };
 

@@ -134,7 +134,7 @@ let rec fFeature =
         ClassVarDecl vd ->
           fMeta "ClassVarDecl_($, $)" [fStr vd.variable_name; fStr vd.variable_type]
       | MethDecl (md,fs,ss) ->
-          fMeta "MethDecl_($, $, $)" [fStr md.method_name; fList(fFormal) fs; fStmt ss]
+          fMeta "MethDecl_($, $, $, $)" [fStr md.method_name; fStr md.return_type; fList(fFormal) fs; fStmt ss]
 
 let rec fClass (ClassDecl (cd,fs)) =
   fMeta "ClassDecl_($, $, $)" [fStr cd.class_name; fStr cd.parent_name; fList(fFeature) fs]
