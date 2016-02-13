@@ -2,22 +2,18 @@
 
 %token<string> 		IDENT
 %token<int>	  		NUMBER
-/** keiko ops */
-%token<Keiko.op> 	MULOP ADDOP RELOP
+
 /** decleratives */
 %token 				MAIN CLASS EXTENDS NEW VAR DEF
 /** statements */
 %token 				WHILE IF ELSE PRINT LCURL RCURL ASSIGN RETURN
 /** punctuation */
-%token				DOT COMMA SEMI COLON EOF BADTOK NEWLINE
-/** expressions */
-%token				MINUS EQUALS LBRAC RBRAC
+%token				DOT COMMA SEMI COLON EOF BADTOK NEWLINE LBRAC RBRAC
 /** main entry point */
 %start				program
 %type<Tree.program>	program
 
 %{
-	open Keiko
 	open Tree
 %}
 
@@ -78,24 +74,9 @@ stmt :
 /*********** Expressions ************/
 
 expr :
-	| simple							{ $1 }
-	| expr RELOP simple					{ exprDesc (Binop ($2, $1, $3)) }
-	| expr EQUALS simple				{ exprDesc (Binop (Eq, $1, $3)) };
-
-simple :
-	  term 								{ $1 }
-	| simple ADDOP term 				{ exprDesc (Binop ($2, $1, $3)) }
-	| simple MINUS term					{ exprDesc (Binop (Minus, $1, $3)) };
-
-term :
-	  factor 							{ $1 }
-	| term MULOP factor 				{ exprDesc (Binop ($2, $1, $3)) };
-
-factor :
-	  NUMBER							{ exprDesc (Number $1) }
+	  NUMBER 							{ exprDesc (Number $1) }
 	| IDENT								{ exprDesc (Variable $1) }
-	| IDENT DOT IDENT args 				{ exprDesc (Call ($1, $3, $4)) }
-	| MINUS factor						{ exprDesc (Monop (Uminus, $2)) }
+	| expr DOT IDENT args 				{ exprDesc (Call ($1, $3, $4)) };
 
 args : 
 	  LBRAC RBRAC 						{ [] }

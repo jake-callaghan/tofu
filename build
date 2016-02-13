@@ -22,20 +22,21 @@ ocamlyacc parser.mly
 echo " "
 echo "[parser built successfully]"
 
-ocamlc -c env.mli print.mli source.mli keiko.mli tree.mli parser.mli kgen.mli
+ocamlc -c print.mli source.mli keiko.mli tree.mli env.mli parser.mli kgen.mli
 echo " "
 echo "[interfaces built successfully]"
 
 echo " "
-ocamlc -c env.ml print.ml source.ml keiko.ml lexer.ml tree.ml parser.ml kgen.ml
+ocamlc -c print.ml source.ml keiko.ml lexer.ml tree.ml env.ml parser.ml kgen.ml
 ocamlc -c tofuc.ml
 
 echo " "
 echo "[object files built successfully]"
 
-ocamlc -o tofuc env.cmo print.cmo source.cmo keiko.cmo tree.cmo lexer.cmo parser.cmo kgen.cmo tofuc.cmo
+ocamlc -o tofuc print.cmo source.cmo keiko.cmo tree.cmo env.cmo lexer.cmo parser.cmo kgen.cmo tofuc.cmo
 echo " "
 echo "[executable tofuc built successfully]"
 
 echo " "
 echo "[finished]"
+

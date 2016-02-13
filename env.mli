@@ -1,3 +1,6 @@
 (* env.mli *)
 
-type env_def = { thisisheresothethingcompilesfornow : string }
+open Tree
+
+type def = 
+	{ makemecompile: int}

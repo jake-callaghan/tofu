@@ -1,9 +1,6 @@
 type token =
   | IDENT of (string)
   | NUMBER of (int)
-  | MULOP of (Keiko.op)
-  | ADDOP of (Keiko.op)
-  | RELOP of (Keiko.op)
   | MAIN
   | CLASS
   | EXTENDS
@@ -25,8 +22,6 @@ type token =
   | EOF
   | BADTOK
   | NEWLINE
-  | MINUS
-  | EQUALS
   | LBRAC
   | RBRAC
 

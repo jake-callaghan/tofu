@@ -1,7 +1,6 @@
 (* lexer.mll *)
 
 {
-	open Keiko
 	open Parser
 	open Tree
 	open Lexing
@@ -35,15 +34,6 @@ rule token = parse
 	| "("				{ LBRAC }
 	| ")"				{ RBRAC }
 	| "="				{ ASSIGN }
-	| "=="				{ RELOP Eq }
-	| "+"				{ ADDOP Plus }
-	| "-"				{ MINUS }
-	| "*"				{ MULOP Times }
-	| "<"				{ RELOP Lt }
-	| ">"				{ RELOP Gt }
-	| "<>"				{ RELOP Neq }
-	| "<="				{ RELOP Leq }
-	| ">="				{ RELOP Geq }
 	| "(*"				{ comment lexbuf; token lexbuf }
 	| "\n"				{ incr lineno; Source.note_line !lineno lexbuf; token lexbuf }
 	| ['A'-'Z''a'-'z']['A'-'Z''a'-'z''0'-'9''_']* as s { IDENT s }

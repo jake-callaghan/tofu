@@ -1,6 +1,10 @@
 (* tree.ml *)
 
-open Env
+(** |env_def| represents the annotated AST information *)
+type env_def = { 
+  class_name : string;      (* dynamic class type *)
+            
+}
 
 (** |class_desc| *)
 type class_desc = 
@@ -39,9 +43,7 @@ type expr_desc =
 and expr = 
     Number of int
   | Variable of string
-  | Monop of Keiko.op * expr_desc
-  | Binop of Keiko.op * expr_desc * expr_desc
-  | Call of string * string * expr_desc list
+  | Call of expr_desc * string * expr_desc list
 
 (** |stmt| type representing statements *)
 and stmt =
@@ -98,12 +100,8 @@ let rec fExpr =
         fMeta "Number_$" [fNum n]
     | Variable x -> 
         fMeta "Variable_$" [fStr x]
-    | Monop (w, e1) -> 
-        fMeta "Monop_($, $)" [fStr (Keiko.op_name w); fExpr e1.guts]
-    | Binop (w, e1, e2) -> 
-        fMeta "Binop_($, $, $)" [fStr (Keiko.op_name w); fExpr e1.guts; fExpr e2.guts]
-    | Call (obj, meth, es) ->
-        fMeta "Call_($, $, $)" [fStr obj; fStr meth; fList(fExpr) (List.map gutter es)]
+    | Call (ed, meth, es) ->
+        fMeta "Call_($, $, $)" [fExpr (gutter ed); fStr meth; fList(fExpr) (List.map gutter es)]
 
 let rec fStmt = 
   function

@@ -1,3 +1,7 @@
 (* env.ml *)
 
-type env_def = { thisisheresothethingcompilesfornow : string }
+open Tree
+
+(** |def| -- definitions in the environment *)
+type def = 
+	{ makemecompile: int}

@@ -1,6 +1,11 @@
 (* tree.mli *)
 
-open Env
+(** |env_def| represents the annotated AST information *)
+type env_def = { 
+
+  class_name : string;      (* dynamic class type *)
+            
+}
 
 (** |class_desc| *)
 type class_desc = 
@@ -34,9 +39,7 @@ type expr_desc =
 and expr = 
     Number of int
   | Variable of string
-  | Monop of Keiko.op * expr_desc
-  | Binop of Keiko.op * expr_desc * expr_desc
-  | Call of string * string * expr_desc list
+  | Call of expr_desc * string * expr_desc list
 
 (** |stmt| type representing statements *)
 and stmt =
