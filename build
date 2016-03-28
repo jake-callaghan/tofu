@@ -1,42 +1,26 @@
 #!/bin/bash
 echo "===== BUILDING TOFU COMPILER ====="
 
-echo " "
 echo "[cleaning directory]"
-echo " "
 rm -f *.cm*
 rm -f .depend
 
 echo "[generating dependendcies]"
 ocamldep * > .depend
-cat .depend
 
-echo " "
 echo "[beginning compilation]"
-echo " "
-
+echo "[creating lexer]"
 ocamllex lexer.mll
-echo "[lexer built successfully]"
-
+echo "[creating parser]"
 ocamlyacc parser.mly
-echo " "
-echo "[parser built successfully]"
 
 ocamlc -c print.mli source.mli keiko.mli tree.mli env.mli parser.mli kgen.mli
-echo " "
-echo "[interfaces built successfully]"
 
-echo " "
-ocamlc -c print.ml source.ml keiko.ml lexer.ml tree.ml env.ml parser.ml kgen.ml
+echo "[compiling source files]"
+ocamlc -c -w -3 print.ml source.ml keiko.ml lexer.ml tree.ml env.ml parser.ml kgen.ml
 ocamlc -c tofuc.ml
 
-echo " "
-echo "[object files built successfully]"
-
+echo "[building executable]"
 ocamlc -o tofuc print.cmo source.cmo keiko.cmo tree.cmo env.cmo lexer.cmo parser.cmo kgen.cmo tofuc.cmo
-echo " "
-echo "[executable tofuc built successfully]"
 
-echo " "
 echo "[finished]"
-

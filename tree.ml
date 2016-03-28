@@ -8,15 +8,17 @@ type env_def = {
 
 (** |class_desc| *)
 type class_desc = 
-  { class_name : string;                           (* name of the class *)
-    parent_name : string;                          (* name of the parent class *) 
-    mutable methods_list : method_desc list;       (* list of class' method names  *)
-    mutable variables_list : variable_desc list }  (* list of class' field names   *)
+  { class_name : string;                    (* name of the class *)
+    parent_name : string;                   (* name of the parent class *)
+    (* mutable vtable TO DO *)
+  } 
 
 (** |method_desc| *)
 and method_desc = 
   { method_name : string;                   (* the method name *)
     return_type : string;                   (* name of class type returned *)
+    mutable number_of_formals : int;        (* the number of formal parameters required *)
+    formals : formal list;                  (* the formal parameters *)
     mutable method_def : env_def option }   (* environmental defintion *)
 
 (** |variable_desc| *)
@@ -25,17 +27,8 @@ and variable_desc =
     variable_type : string;                 (* the variables' static type *)
     mutable variable_def : env_def option } (* environmental definition *)
 
-let classDesc n p =                         (* creates an unannotated class_desc *)
-  { class_name = n; parent_name = p; methods_list = []; variables_list = [] }
-let methodDesc n rt =                       (* creates an unannotated method_desc *)
-  { method_name = n; return_type = rt; method_def = None }
-let variableDesc n t =                      (* creates an unannotated variable_desc *)
-  { variable_name = n; 
-    variable_type = t;
-    variable_def = None }
-
 (** |expr_desc| *)
-type expr_desc = 
+and expr_desc = 
   { guts : expr;                                (* the actual expression *)
     mutable expression_type : string option }   (* the annotated type's class name *)
 
@@ -43,6 +36,7 @@ type expr_desc =
 and expr = 
     Number of int
   | Variable of string
+  | New of string
   | Call of expr_desc * string * expr_desc list
 
 (** |stmt| type representing statements *)
@@ -68,17 +62,25 @@ and class_decl = ClassDecl of class_desc * feature_decl list
 
 and main_decl = MainDecl of stmt 
 
-type program = Program of main_decl * class_decl list
-
+let classDesc n p =                         (* creates an unannotated class_desc *)
+  { class_name = n; parent_name = p; }
+let methodDesc n rt formals1 =              (* creates an unannotated method_desc *)
+  { method_name = n; return_type = rt; method_def = None; formals = formals1; number_of_formals = List.length formals1; }
+let variableDesc n t =                      (* creates an unannotated variable_desc *)
+  { variable_name = n; 
+    variable_type = t;
+    variable_def = None }
 let exprDesc e =                (* creates an unannotated expr_desc *)
   { guts = e; expression_type = None}
+
+type program = Program of main_decl * class_decl list
 
 let seq = function
     [] -> Skip
   | [s] -> s
   | ss -> Seq ss  
 
-(* Mike Spivey's Pretty printer with tofu AS constructs *)
+(* Mike Spivey's Pretty printer with added tofu syntax tree constructs *)
 
 open Print
 
@@ -100,6 +102,8 @@ let rec fExpr =
         fMeta "Number_$" [fNum n]
     | Variable x -> 
         fMeta "Variable_$" [fStr x]
+    | New cname ->
+        fMeta "New_$" [fStr cname]
     | Call (ed, meth, es) ->
         fMeta "Call_($, $, $)" [fExpr (gutter ed); fStr meth; fList(fExpr) (List.map gutter es)]
 

@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "===== REMOVING ====="
+rm -v -f *.cmo *.cmi

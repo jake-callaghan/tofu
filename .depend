@@ -23,3 +23,6 @@ tofuc.cmx : tree.cmx source.cmx print.cmx parser.cmx lexer.cmx kgen.cmx
 tree.cmo : print.cmi tree.cmi
 tree.cmx : print.cmx tree.cmi
 tree.cmi :
+typecheck.cmo : tree.cmi print.cmi env.cmi typecheck.cmi
+typecheck.cmx : tree.cmx print.cmx env.cmx typecheck.cmi
+typecheck.cmi : tree.cmi print.cmi env.cmi

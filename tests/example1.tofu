@@ -21,7 +21,7 @@ class ClassB extends ClassA {
 		var localA : Int;
 		var localB : ClassA;
 		while (x) {
-			localA = localB.getValue() + localA;
+			localA = localB.getValue();
 			localB = localB.update(1000);
 		};
 		return localB;

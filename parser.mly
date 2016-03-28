@@ -37,7 +37,7 @@ feature_decl_list :
 	| feature_decl feature_decl_list					{ $1 :: $2 };	 
 
 feature_decl :
-	  DEF IDENT formals COLON IDENT ASSIGN LCURL stmts RCURL { MethDecl ((methodDesc $2 $5), $3, $8) } 
+	  DEF IDENT formals COLON IDENT ASSIGN LCURL stmts RCURL { MethDecl ((methodDesc $2 $5 $3), $3, $8) } 
 	| VAR IDENT COLON IDENT SEMI	{ ClassVarDecl (variableDesc $2 $4) };
 
 formals : 
@@ -62,13 +62,14 @@ stmt_list :
 
 stmt :
 	  /* empty */					{ Skip }
+	| expr 							{ Skip } 
 	| VAR IDENT COLON IDENT     	{ LocalVarDecl (variableDesc $2 $4) }
 	| IDENT ASSIGN expr      		{ AssignStmt ($1, $3) }
 	| RETURN expr        			{ ReturnStmt $2 }
 	| IF LBRAC expr RBRAC LCURL stmts RCURL	{ IfStmt ($3, $6, Skip) }
 	| IF LBRAC expr RBRAC LCURL stmts RCURL ELSE LCURL stmts RCURL { IfStmt($3, $6, $10) }
 	| WHILE LBRAC expr RBRAC LCURL stmts RCURL { WhileStmt ($3, $6) }
-	| PRINT expr     				{ PrintStmt ($2) }
+	| PRINT LBRAC expr RBRAC    	{ PrintStmt ($3) }
 	| NEWLINE 						{ Newline };
 
 /*********** Expressions ************/
@@ -76,6 +77,7 @@ stmt :
 expr :
 	  NUMBER 							{ exprDesc (Number $1) }
 	| IDENT								{ exprDesc (Variable $1) }
+	| NEW IDENT 						{ exprDesc (New $2) }
 	| expr DOT IDENT args 				{ exprDesc (Call ($1, $3, $4)) };
 
 args : 
