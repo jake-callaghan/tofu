@@ -1,0 +1,46 @@
+Program (Main (Seq [LocalVarDecl (counter, Counter);
+                     Assign (counter, New PowerOfTwoCounter);
+                     LocalVarDecl (counter2, Counter);
+                     Assign (counter2, New Counter);
+                     LocalVarDecl (x, Integer);
+                     Assign (x, Number 5000);
+                     WhileStmt (Call (Call (Variable counter, value, []),
+                                       lessThanOrEqual,
+                                       [Variable x]),
+                                 Seq [Skip; Skip; Skip]);
+                     Print (Call (Variable counter, value, []));
+                     Print (Call (Variable counter2, value, []));
+                     Skip]),
+          [ClassDecl (Counter,
+                       Object,
+                       [InstanceVarDecl (value, Integer);
+                         MethDecl (init,
+                                    Unit,
+                                    [],
+                                    Seq [Assign (value, Number 0); Skip]);
+                         MethDecl (value,
+                                    Integer,
+                                    [],
+                                    Seq [Return (Variable value); Skip]);
+                         MethDecl (increment,
+                                    Unit,
+                                    [],
+                                    Seq [Assign (value,
+                                                  Call (Variable value,
+                                                         add,
+                                                         [Number 1]));
+                                          Skip])]);
+            ClassDecl (PowerOfTwoCounter,
+                        Counter,
+                        [MethDecl (init,
+                                    Unit,
+                                    [],
+                                    Seq [Assign (value, Number 1); Skip]);
+                          MethDecl (increment,
+                                     Unit,
+                                     [],
+                                     Seq [Assign (value,
+                                                   Call (Variable value,
+                                                          multiply,
+                                                          [Number 2]));
+                                           Skip])])])

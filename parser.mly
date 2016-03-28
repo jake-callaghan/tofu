@@ -38,7 +38,7 @@ feature_decl_list :
 
 feature_decl :
 	  DEF IDENT formals COLON IDENT ASSIGN LCURL stmts RCURL { MethDecl ((methodDesc $2 $5 $3), $3, $8) } 
-	| VAR IDENT COLON IDENT SEMI	{ ClassVarDecl (variableDesc $2 $4) };
+	| VAR IDENT COLON IDENT SEMI	{ InstanceVarDecl (variableDesc $2 $4) };
 
 formals : 
 	  LBRAC RBRAC					{ [] }

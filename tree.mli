@@ -53,7 +53,7 @@ and stmt =
 
 (** declerative types that define features of classes (vars and methods), classes and the main *)
 and feature_decl = 
-    ClassVarDecl of variable_desc
+    InstanceVarDecl of variable_desc
   | MethDecl of method_desc * formal list * stmt
 
 (** param_name x param_type *)

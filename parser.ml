@@ -266,7 +266,7 @@ let yyact = [|
     let _4 = (Parsing.peek_val __caml_parser_env 1 : string) in
     Obj.repr(
 # 41 "parser.mly"
-                              ( ClassVarDecl (variableDesc _2 _4) )
+                              ( InstanceVarDecl (variableDesc _2 _4) )
 # 271 "parser.ml"
                : 'feature_decl))
 ; (fun __caml_parser_env ->
