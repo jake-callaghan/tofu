@@ -1,36 +1,34 @@
 (* tree.ml *)
 
-(** |env_def| represents the annotated AST information *)
-type env_def = { 
-  class_name : string;      (* dynamic class type *)
-            
-}
-
 (** |class_desc| *)
 type class_desc = 
-  { class_name : string;                    (* name of the class *)
-    parent_name : string;                   (* name of the parent class *)
-    (* mutable vtable TO DO *)
-  } 
+  { class_name : string;                           (* name of the class *)
+    parent_name : string;                          (* name of the parent class *) 
+    (* pointers to method descriptors defined by this class, added during type-checking *)
+    mutable methods : (method_desc ref) list;            
+    (* pointers to instance variable descriptors of the class, added during type-checking *)
+    mutable variables : (variable_desc ref) list;       
+  }
 
 (** |method_desc| *)
 and method_desc = 
   { method_name : string;                   (* the method name *)
+    mutable defining_class : class_desc;    (* pointer to class_desc of the defining class, added during type-checking *)
     return_type : string;                   (* name of class type returned *)
-    mutable number_of_formals : int;        (* the number of formal parameters required *)
+    number_of_formals : int;                (* the number of formal parameters required *)
     formals : formal list;                  (* the formal parameters *)
-    mutable method_def : env_def option }   (* environmental defintion *)
+  }
 
 (** |variable_desc| *)
 and variable_desc = 
   { variable_name : string;                 (* the variables' name *)  
     variable_type : string;                 (* the variables' static type *)
-    mutable variable_def : env_def option } (* environmental definition *)
+  }
 
 (** |expr_desc| *)
 and expr_desc = 
-  { guts : expr;                                (* the actual expression *)
-    mutable expression_type : string option }   (* the annotated type's class name *)
+  { guts : expr;                            (* the actual expression *)
+  }
 
 (** |expr| type representing expressible values *)
 and expr = 
@@ -63,15 +61,15 @@ and class_decl = ClassDecl of class_desc * feature_decl list
 and main_decl = MainDecl of stmt 
 
 let classDesc n p =                         (* creates an unannotated class_desc *)
-  { class_name = n; parent_name = p; }
+  { class_name = n; parent_name = p; methods = []; variables = [] }
 let methodDesc n rt formals1 =              (* creates an unannotated method_desc *)
-  { method_name = n; return_type = rt; method_def = None; formals = formals1; number_of_formals = List.length formals1; }
+  { method_name = n; defining_class = classDesc "Object" ""; return_type = rt; formals = formals1; number_of_formals = List.length formals1; }
 let variableDesc n t =                      (* creates an unannotated variable_desc *)
   { variable_name = n; 
     variable_type = t;
-    variable_def = None }
+  }
 let exprDesc e =                (* creates an unannotated expr_desc *)
-  { guts = e; expression_type = None}
+  { guts = e; }
 
 type program = Program of main_decl * class_decl list
 

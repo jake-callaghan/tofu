@@ -1,36 +1,34 @@
 (* tree.mli *)
 
-(** |env_def| represents the annotated AST information *)
-type env_def = { 
-  class_name : string;      (* dynamic type *)
-            
-}
-
 (** |class_desc| *)
 type class_desc = 
   { class_name : string;                           (* name of the class *)
     parent_name : string;                          (* name of the parent class *) 
-    (* mutable vtable TO DO *)
+    (* pointers to method descriptors defined by this class, added during type-checking *)
+    mutable methods : (method_desc ref) list;            
+    (* pointers to instance variable descriptors of the class, added during type-checking *)
+    mutable variables : (variable_desc ref) list;       
   }
 
 (** |method_desc| *)
 and method_desc = 
   { method_name : string;                   (* the method name *)
+    mutable defining_class : class_desc;    (* pointer to class_desc of the defining class, added during type-checking *)
     return_type : string;                   (* name of class type returned *)
-    mutable number_of_formals : int;        (* the number of formal parameters required *)
+    number_of_formals : int;                (* the number of formal parameters required *)
     formals : formal list;                  (* the formal parameters *)
-    mutable method_def : env_def option }   (* environmental defintion *)
+  }
 
 (** |variable_desc| *)
 and variable_desc = 
   { variable_name : string;                 (* the variables' name *)  
     variable_type : string;                 (* the variables' static type *)
-    mutable variable_def : env_def option } (* environmental definition *)
+  }
 
 (** |expr_desc| *)
 and expr_desc = 
-  { guts : expr;                                      (* the actual expression *)
-    mutable expression_type : string option }         (* the type's class name *)
+  { guts : expr;                            (* the actual expression *)
+  }
 
 (** |expr| type representing expressible values *)
 and expr = 
@@ -52,6 +50,7 @@ and stmt =
   | Newline
 
 (** declerative types that define features of classes (vars and methods), classes and the main *)
+
 and feature_decl = 
     InstanceVarDecl of variable_desc
   | MethDecl of method_desc * formal list * stmt

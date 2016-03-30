@@ -1,6 +1,8 @@
-env.cmo : tree.cmi env.cmi
-env.cmx : tree.cmx env.cmi
+env.cmo : tree.cmi errors.cmo env.cmi
+env.cmx : tree.cmx errors.cmx env.cmi
 env.cmi : tree.cmi
+errors.cmo : print.cmi
+errors.cmx : print.cmx
 keiko.cmo : tree.cmi source.cmi print.cmi keiko.cmi
 keiko.cmx : tree.cmx source.cmx print.cmx keiko.cmi
 keiko.cmi :
@@ -23,6 +25,6 @@ tofuc.cmx : tree.cmx source.cmx print.cmx parser.cmx lexer.cmx kgen.cmx
 tree.cmo : print.cmi tree.cmi
 tree.cmx : print.cmx tree.cmi
 tree.cmi :
-typecheck.cmo : tree.cmi print.cmi env.cmi typecheck.cmi
-typecheck.cmx : tree.cmx print.cmx env.cmx typecheck.cmi
-typecheck.cmi : tree.cmi print.cmi env.cmi
+typecheck.cmo : tree.cmi env.cmi typecheck.cmi
+typecheck.cmx : tree.cmx env.cmx typecheck.cmi
+typecheck.cmi : tree.cmi env.cmi
