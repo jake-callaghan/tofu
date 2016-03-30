@@ -62,7 +62,6 @@ stmt_list :
 
 stmt :
 	  /* empty */					{ Skip }
-	| expr 							{ Skip } 
 	| VAR IDENT COLON IDENT     	{ LocalVarDecl (variableDesc $2 $4) }
 	| IDENT ASSIGN expr      		{ AssignStmt ($1, $3) }
 	| RETURN expr        			{ ReturnStmt $2 }
@@ -70,7 +69,7 @@ stmt :
 	| IF LBRAC expr RBRAC LCURL stmts RCURL ELSE LCURL stmts RCURL { IfStmt($3, $6, $10) }
 	| WHILE LBRAC expr RBRAC LCURL stmts RCURL { WhileStmt ($3, $6) }
 	| PRINT LBRAC expr RBRAC    	{ PrintStmt ($3) }
-	| NEWLINE 						{ Newline };
+	| NEWLINE 						{ Newline }
 
 /*********** Expressions ************/
 

@@ -41,6 +41,7 @@ and expr =
 and stmt =
     Skip
   | Seq of stmt list
+  | UnitCall of expr_desc * string * expr_desc list (* methods with return type Unit *)
   | LocalVarDecl of variable_desc
   | AssignStmt of string * expr_desc
   | ReturnStmt of expr_desc
@@ -111,6 +112,8 @@ let rec fStmt =
         fStr "Skip"
     | Seq ss -> 
         fMeta "Seq_$" [fList(fStmt) ss]
+    | UnitCall (ed, meth, es) ->
+        fMeta "Call_($, $, $)" [fExpr (gutter ed); fStr meth; fList(fExpr) (List.map gutter es)]
     | LocalVarDecl vd ->
         fMeta "LocalVarDecl_($, $)" [fStr vd.variable_name; fStr vd.variable_type]
     | AssignStmt (x, e) -> 
