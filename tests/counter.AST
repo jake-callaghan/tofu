@@ -7,7 +7,11 @@ Program (Main (Seq [LocalVarDecl (counter, Counter);
                      WhileStmt (Call (Call (Variable counter, value, []),
                                        lessThanOrEqual,
                                        [Variable x]),
-                                 Seq [Skip; Skip; Skip]);
+                                 Seq [Call (Variable counter, increment, []);
+                                       Call (Variable counter2,
+                                              increment,
+                                              []);
+                                       Skip]);
                      Print (Call (Variable counter, value, []));
                      Print (Call (Variable counter2, value, []));
                      Skip]),

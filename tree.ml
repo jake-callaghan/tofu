@@ -41,7 +41,7 @@ and expr =
 and stmt =
     Skip
   | Seq of stmt list
-  | UnitCall of expr_desc * string * expr_desc list (* methods with return type Unit *)
+  | UnitCall of expr_desc * string * expr_desc list 
   | LocalVarDecl of variable_desc
   | AssignStmt of string * expr_desc
   | ReturnStmt of expr_desc
