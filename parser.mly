@@ -70,6 +70,7 @@ stmt :
 	| WHILE LBRAC expr RBRAC LCURL stmts RCURL { WhileStmt ($3, $6) }
 	| PRINT LBRAC expr RBRAC    	{ PrintStmt ($3) }
 	| NEWLINE 						{ Newline }
+	| expr DOT IDENT args 			{ UnitCall ($1, $3, $4) };
 
 /*********** Expressions ************/
 

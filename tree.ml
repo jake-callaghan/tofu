@@ -1,13 +1,22 @@
 (* tree.ml *)
 
+open Keiko
+
+type addr
+
+(** |vtable| -- the method tables used to perform dynamic dispatch at runtime *)
+type vtable = {
+  address : addr;                     (* the assigned runtime label of this table *)
+  mutable methods : list method_desc  (* the methods to be pointed to by the table at runtime *)
+}
+
 (** |class_desc| *)
-type class_desc = 
+and class_desc = 
   { class_name : string;                           (* name of the class *)
     parent_name : string;                          (* name of the parent class *) 
-    (* pointers to method descriptors defined by this class, added during type-checking *)
-    mutable methods : (method_desc ref) list;            
-    (* pointers to instance variable descriptors of the class, added during type-checking *)
-    mutable variables : (variable_desc ref) list;       
+    mutable parent_desc : class_desc;              (* pointer to parent class' class_desc *)
+    mutable variables : (variable_desc ref) list;  (* pointers to instance variable descriptors of the class *)
+    mutable method_table : vtable;                 (* holds a list of method_descs appropriate to the class *)
   }
 
 (** |method_desc| *)
@@ -71,6 +80,26 @@ let variableDesc n t =                      (* creates an unannotated variable_d
   }
 let exprDesc e =                (* creates an unannotated expr_desc *)
   { guts = e; }
+
+(** |add_method| -- add method_desc md, overriding any previous md's with the same name
+  * this allows for a subclass to override any method (all methods are virtual)
+  *)
+let add_method vt md = {
+  (* override an existing md in methods of the same name, otherwise append md *)
+  let rec search mds = match mds with 
+      [] -> List.append mds [md] (* not found -> append *)
+    | (md2 :: rest) -> 
+      if md2.method_name = md.method_name 
+      then (md :: rest) (* replace *)
+      else md2 :: (search rest) (* continue search *)
+  in search (vt.methods);
+  
+(** |find_method| -- try to extract a method descriptor with matching name 
+  * raising Not_found expception if not found 
+  *)
+let find_method vt mname = 
+  let has_same_name md = md.method_name = mname in 
+    List.find has_same_name (vt.methods) 
 
 type program = Program of main_decl * class_decl list
 

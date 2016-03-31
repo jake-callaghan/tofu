@@ -1,4 +1,4 @@
-(* typecheck.mli *)
+(* tofu/typecheck.mli *)
 
 open Tree
 open Env

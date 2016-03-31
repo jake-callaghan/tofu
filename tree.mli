@@ -1,13 +1,22 @@
 (* tree.mli *)
 
+open Keiko
+
+type addr = int;
+
+(** |vtable| -- the method tables used to perform dynamic dispatch at runtime *)
+type vtable = {
+  address : addr;                      (* the assigned runtime label of this table *)
+  mutable methods : list method_desc  (* the methods to be pointed to by the table at runtime *)
+}
+
 (** |class_desc| *)
-type class_desc = 
+and class_desc = 
   { class_name : string;                           (* name of the class *)
     parent_name : string;                          (* name of the parent class *) 
-    (* pointers to method descriptors defined by this class, added during type-checking *)
-    mutable methods : (method_desc ref) list;            
-    (* pointers to instance variable descriptors of the class, added during type-checking *)
-    mutable variables : (variable_desc ref) list;       
+    mutable parent_desc : class_desc;              (* pointer to parent class' class_desc *)
+    mutable variables : (variable_desc ref) list;  (* pointers to instance variable descriptors of the class *)
+    mutable method_table : vtable;                 (* holds a list of method_descs appropriate to the class *)
   }
 
 (** |method_desc| *)
@@ -67,6 +76,10 @@ val exprDesc : expr -> expr_desc
 val classDesc : string -> string -> class_desc
 val methodDesc : string -> string -> formal list -> method_desc
 val variableDesc : string -> string -> variable_desc
+
+val new_vtable : label -> method_desc list -> vtable
+val add_method : vtable -> method_desc -> unit 
+val find_method : vtable -> string -> method_desc
 
 type program = Program of main_decl * class_decl list
 

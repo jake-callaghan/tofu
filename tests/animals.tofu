@@ -33,9 +33,12 @@ class Animal {
 }
 
 class Dog extends Animal {
+	var x : Integer;
+
 	def init() : Unit = {
 		age = 1;
 		cuteness = 8;
+		x = -1;
 	}
 }
 
@@ -44,6 +47,7 @@ class Puppy extends Dog {
 	def init() : Unit = {
 		age = 0;
 		cuteness = 1000;
+		x = -2;
 	}
 
 	def ruinCarpet() : Unit = {
