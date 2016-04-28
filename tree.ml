@@ -223,7 +223,7 @@ let fVTable vt =
   fMeta "VTable_($,$)" [fInt vt.address; fList(fMethodDesc) vt.methods]
 
 let rec fClass (ClassDecl (cd,fs)) =
-  fMeta "ClassDecl_($, $, $, $)" [
+  fMeta "ClassDecl_($, $, $, $, $)" [
     fStr cd.class_name;
     fStr cd.parent_name;
     fClassDescOpt cd.parent_desc;
