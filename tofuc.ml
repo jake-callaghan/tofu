@@ -1,7 +1,8 @@
 (* tofuc.ml *)
 
-open Print 
+open Print
 open Source
+open Typecheck
 
 (* |main| -- main program *)
 let main () =
@@ -11,8 +12,8 @@ let main () =
   Arg.parse [("-d", Arg.Set dflag, " Print the tree");
       ("-O", Arg.Unit (fun () -> Kgen.optflag := true), " Peephole optimiser")]
     (function s -> fns := !fns @ [s]) usage;
-  if List.length !fns <> 1 then begin 
-    fprintf stderr "$\n" [fStr usage]; exit 2 
+  if List.length !fns <> 1 then begin
+    fprintf stderr "$\n" [fStr usage]; exit 2
   end;
   let in_file = List.hd !fns in
   let in_chan = open_in in_file in
@@ -21,13 +22,17 @@ let main () =
   let prog = try Parser.program Lexer.token lexbuf with
       Parsing.Parse_error ->
         let tok = Lexing.lexeme lexbuf in
-        err_message "syntax error at token '$'" 
+        err_message "syntax error at token '$'"
           [fStr tok] !Lexer.lineno;
         exit 1 in
 
-  if !dflag then Tree.print_tree stdout prog;
+  Typecheck.annotate prog true;
 
-  (* type checking 
+  Tree.print_tree stdout prog;
+
+
+
+  (* type checking
   begin try Check.annotate prog with
       Check.Semantic_error (fmt, args, line) ->
         err_message fmt args line;

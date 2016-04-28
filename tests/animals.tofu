@@ -1,4 +1,4 @@
-class Main {
+Main {
 	
 	var tony : Dog; tony = new Dog;
 	var ricky : Puppy; ricky = new Puppy;
@@ -38,7 +38,7 @@ class Dog extends Animal {
 	def init() : Unit = {
 		age = 1;
 		cuteness = 8;
-		x = -1;
+		x = 1;
 	}
 }
 
@@ -47,10 +47,11 @@ class Puppy extends Dog {
 	def init() : Unit = {
 		age = 0;
 		cuteness = 1000;
-		x = -2;
+		x = 2;
 	}
 
 	def ruinCarpet() : Unit = {
-		cuteness = cuteness.minus(250);
+		var y : Integer; y = 250;
+		cuteness = cuteness.minus(y);
 	}
 }  

@@ -2,12 +2,12 @@
  * An example program that calculates the largest power of two less than or equal to 5000, and its exponent *
  *)
 
-class Main {
+Main {
 	var counter : Counter; counter = new PowerOfTwoCounter; 
 	var counter2 : Counter; counter2 = new Counter;
 	var x : Integer; x = 5000;
 
-	while (counter.value().lessThanOrEqual(x)) {
+	while (counter.value().isLessThanOrEqual(x)) {
 		counter.increment();
 		counter2.increment();
 	};

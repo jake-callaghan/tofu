@@ -6,30 +6,24 @@ open Tree
 (** |isEqual_desc| -- a method_desc for the isEqual method *)
 let isEqual_desc = {
 	method_name = "isEqual";
-	defining_class = Object_desc;
+	defining_class = None;
 	return_type = "Boolean";
 	number_of_formals = 1;
 	formals = [Formal ("that","Object")];
-}
+	vtable_index = 0;
+	locals = [];
+	body = Skip;
+};;
 
-(* add other method_descs here and include in Object_method_descs 
- * 
- * ...
- *
- *)
+(* ... *)
 
-and Object_method_descs = [isEqual_desc];
-
-(** |Object_vtable| -- a vtable representing the methods on Objects *)
-and Object_vtable = {
-(* address = ... ; *)
-   methods = Object_method_descs;
-}
-
-(** |Object_desc| -- a class_desc for the Object class *)
-and Object_desc = {
+(** |object_desc| -- a class_desc for the Object class *)
+let object_desc = {
 	class_name = "Object";
 	parent_name = ""; (* object is the top of the class heirarchy *)
+	parent_desc = None;
 	variables = [];
-	vtable = Object_vtable;
-}
+	method_table = { address = -1; methods = [isEqual_desc]; };
+};;
+
+let () = (isEqual_desc.defining_class <- Some object_desc); ();;

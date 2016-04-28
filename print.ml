@@ -12,17 +12,17 @@ let rec do_print outch fmt args0 =
     if fmt.[i] <> '$' then
       outch fmt.[i]
     else begin
-      try 
+      try
         List.hd !args vtab;
-        args := List.tl !args 
+        args := List.tl !args
       with
-        Invalid_argument _ -> 
+        Invalid_argument _ ->
           outch '*'; outch '*'; outch '*'
     end
   done
 
 let fChr ch vt = vt.outch ch
-let fStr s vt = 
+let fStr s vt =
   for i = 0 to String.length s - 1 do vt.outch s.[i] done
 
 let fNum n = fStr (string_of_int n)
@@ -40,7 +40,7 @@ let fFix (n, w) =
 let fMeta fmt args = fExt (function prf -> prf fmt args)
 
 (* |fList| -- format a comma-separated list *)
-let fList cvt xs = 
+let fList cvt xs =
   let f prf =
     if xs <> [] then begin
       prf "$" [cvt (List.hd xs)];
@@ -69,9 +69,9 @@ let rec do_grind fmt args0 =
     let ch = fmt.[i] in
     match ch with
         '$' ->
-          begin try 
+          begin try
             List.hd !args vtab;
-            args := List.tl !args 
+            args := List.tl !args
           with
             Invalid_argument _ -> print_string "***"
           end
@@ -86,14 +86,14 @@ let rec do_grind fmt args0 =
 let rec fgrindf fp pfx fmt args =
   let plen = String.length pfx in
   set_formatter_out_channel fp;
-  let (out, flush, newline, spaces) = 
+  let (out, flush, newline, spaces) =
         get_all_formatter_output_functions () in
   let newl1 () = newline(); out pfx 0 plen in
   set_all_formatter_output_functions ~out ~flush ~newline:newl1 ~spaces;
-  out pfx 0 plen; 
-  open_hvbox 2; 
-  do_grind fmt args; 
-  close_box(); 
+  out pfx 0 plen;
+  open_hvbox 2;
+  do_grind fmt args;
+  close_box();
   print_flush ();
   set_all_formatter_output_functions ~out ~flush ~newline ~spaces;
   print_newline ()

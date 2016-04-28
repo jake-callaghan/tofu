@@ -1,8 +1,12 @@
-env.cmo : tree.cmi errors.cmo env.cmi
-env.cmx : tree.cmx errors.cmx env.cmi
+boolean.cmo : tree.cmi object.cmo
+boolean.cmx : tree.cmx object.cmx
+env.cmo : tree.cmi object.cmo integer.cmo errors.cmo boolean.cmo env.cmi
+env.cmx : tree.cmx object.cmx integer.cmx errors.cmx boolean.cmx env.cmi
 env.cmi : tree.cmi
 errors.cmo : print.cmi
 errors.cmx : print.cmx
+integer.cmo : tree.cmi object.cmo
+integer.cmx : tree.cmx object.cmx
 keiko.cmo : tree.cmi source.cmi print.cmi keiko.cmi
 keiko.cmx : tree.cmx source.cmx print.cmx keiko.cmi
 keiko.cmi :
@@ -11,6 +15,8 @@ kgen.cmx : kgen.cmi
 kgen.cmi : tree.cmi
 lexer.cmo : tree.cmi source.cmi parser.cmi
 lexer.cmx : tree.cmx source.cmx parser.cmx
+object.cmo : tree.cmi
+object.cmx : tree.cmx
 parser.cmo : tree.cmi parser.cmi
 parser.cmx : tree.cmx parser.cmi
 parser.cmi : tree.cmi
@@ -20,11 +26,15 @@ print.cmi :
 source.cmo : print.cmi source.cmi
 source.cmx : print.cmx source.cmi
 source.cmi : print.cmi
-tofuc.cmo : tree.cmi source.cmi print.cmi parser.cmi lexer.cmo kgen.cmi
-tofuc.cmx : tree.cmx source.cmx print.cmx parser.cmx lexer.cmx kgen.cmx
-tree.cmo : print.cmi tree.cmi
-tree.cmx : print.cmx tree.cmi
-tree.cmi :
-typecheck.cmo : tree.cmi env.cmi typecheck.cmi
-typecheck.cmx : tree.cmx env.cmx typecheck.cmi
+tofuc.cmo : typecheck.cmi tree.cmi source.cmi print.cmi parser.cmi lexer.cmo \
+    kgen.cmi
+tofuc.cmx : typecheck.cmx tree.cmx source.cmx print.cmx parser.cmx lexer.cmx \
+    kgen.cmx
+tree.cmo : print.cmi keiko.cmi tree.cmi
+tree.cmx : print.cmx keiko.cmx tree.cmi
+tree.cmi : keiko.cmi
+tree_BACKUP.cmo : print.cmi keiko.cmi
+tree_BACKUP.cmx : print.cmx keiko.cmx
+typecheck.cmo : tree.cmi errors.cmo env.cmi typecheck.cmi
+typecheck.cmx : tree.cmx errors.cmx env.cmx typecheck.cmi
 typecheck.cmi : tree.cmi env.cmi

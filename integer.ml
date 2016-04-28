@@ -1,122 +1,153 @@
 (* tofu/integer.ml *)
-(* this module contains everything to implement the Integer tofu library class *)
+(* this module contains everything to implement the integer tofu library class *)
 
 open Object
 open Tree
 
-(** |value|| -- a variable descriptor for the state of an Integer object *)
+(** |value|| -- a variable descriptor for the state of an integer object *)
 let value_desc = {
 	variable_name = "value";
-	variable_type = "primitve" (* 'primitive' denotes a special case of types to be handled later on *)
+	variable_type = Some "primitve"; (* 'primitive' denotes a special case of types to be handled later on *)
+	variable_kind = Some Local;
+	offset = 4;
 }
 
-(* Method descriptors for the Integer *)
+(* Method descriptors for the integer *)
 
-(* this.isEqual(that : Integer) : Boolean *)
-and isEqual_desc = {
+(* this.isEqual(that : integer) : Boolean *)
+let isEqual_desc = {
 	method_name = "equals";
-	defining_class = ref Integer_desc;
+	defining_class = None;
 	return_type = "Boolean";
 	number_of_formals = 1;
 	formals = [Formal ("that","Object")];
-}
+	vtable_index = 0;
+	locals = [];
+	body = Skip;
+};;
 
-(* this.add(that : Integer) : Integer *)
-and add_desc = {
+(* this.add(that : integer) : integer *)
+let add_desc = {
 	method_name = "add";
-	defining_class = ref Integer_desc;
+	defining_class = None;
 	return_type = "Integer";
 	number_of_formals = 1;
 	formals = [Formal ("that","Integer")];
-}
+	vtable_index = 1;
+	locals = [];
+	body = Skip;
+};;
 
-(* this.minus(that : Integer) : Integer *)
-and minus_desc = {
+(* this.minus(that : integer) : integer *)
+let minus_desc = {
 	method_name = "minus";
-	defining_class = ref Integer_desc;
+	defining_class = None;
 	return_type = "Integer";
 	number_of_formals = 1;
 	formals = [Formal ("that","Integer")];
-}
+	vtable_index = 2;
+	locals = [];
+	body = Skip;
+};;
 
-(* this.multiply(that : Integer) : Integer *)
-and multiply_desc = {
+(* this.multiply(that : integer) : integer *)
+let multiply_desc = {
 	method_name = "multiply";
-	defining_class = ref Integer_desc;
+	defining_class = None;
 	return_type = "Integer";
 	number_of_formals = 1;
 	formals = [Formal ("that","Integer")];
-}
+	vtable_index = 3;
+	locals = [];
+	body = Skip;
+};;
 
-(* this.divide(that : Integer) : Integer *)
-and divide_desc = {
+(* this.divide(that : integer) : integer *)
+let divide_desc = {
 	method_name = "divide";
-	defining_class = ref Integer_desc;
+	defining_class = None;
 	return_type = "Integer";
 	number_of_formals = 1;
 	formals = [Formal ("that","Integer")];
-}
+	vtable_index = 4;
+	locals = [];
+	body = Skip;
+};;
 
-(* this.isLessThan(that : Integer) : Boolean *)
-and isLessThan_desc = {
+(* this.isLessThan(that : integer) : Boolean *)
+let isLessThan_desc = {
 	method_name = "isLessThan";
-	defining_class = ref Integer_desc;
+	defining_class = None;
 	return_type = "Boolean";
 	number_of_formals = 1;
 	formals = [Formal ("that","Integer")];
-}
+	vtable_index = 5;
+	locals = [];
+	body = Skip;
+};;
 
-(* this.isLessThanOrEqual(that : Integer) : Boolean *)
-and isLessThanOrEqual_desc = {
+(* this.isLessThanOrEqual(that : integer) : Boolean *)
+let isLessThanOrEqual_desc = {
 	method_name = "isLessThanOrEqual";
-	defining_class = ref Integer_desc;
+	defining_class = None;
 	return_type = "Boolean";
 	number_of_formals = 1;
 	formals = [Formal ("that","Integer")];
-}
+	vtable_index = 6;
+	locals = [];
+	body = Skip;
+};;
 
-(* this.isGreaterThan(that : Integer) : Boolean *)
-and isGreaterThan_desc = {
+(* this.isGreaterThan(that : integer) : Boolean *)
+let isGreaterThan_desc = {
 	method_name = "isGreaterThan";
-	defining_class = ref Integer_desc;
+	defining_class = None;
 	return_type = "Boolean";
 	number_of_formals = 1;
 	formals = [Formal ("that","Integer")];
-}
+	vtable_index = 6;
+	locals = [];
+	body = Skip;
+};;
 
-(* this.isGreaterThanOrEqual(that : Integer) : Boolean *)
-and isGreaterThanOrEqual_desc = {
+(* this.isGreaterThanOrEqual(that : integer) : Boolean *)
+let isGreaterThanOrEqual_desc = {
 	method_name = "isGreaterThanOrEqual";
-	defining_class = ref Integer_desc;
+	defining_class = None;
 	return_type = "Boolean";
 	number_of_formals = 1;
 	formals = [Formal ("that","Integer")];
-}
+	vtable_index = 7;
+	locals = [];
+	body = Skip;
+};;
 
-(* |Integer_methods| -- a list of method descriptors on Integers *)
-and Integer_methods = [
-	isEqual_desc,
-	add_desc,
-	minus_desc,
-	multiply_desc,
-	divide_desc,
-	isLessThan_desc,
-	isLessThanOrEqual_desc,
-	isGreaterThan_desc,
-	isGreaterThanOrEqual_desc
-];
+(* |integer_methods| -- a list of method descriptors on integers *)
+let integer_methods = [
+	isEqual_desc;
+	add_desc;
+	minus_desc;
+	multiply_desc;
+	divide_desc;
+	isLessThan_desc;
+	isLessThanOrEqual_desc;
+	isGreaterThan_desc;
+	isGreaterThanOrEqual_desc;
+];;
 
-(* |Integer_vtable| -- a vtable representing methods on Integers *)
-let Integer_vtable = {
- (* address = ... ; *)
-	methods = Integer_method_descs;
-}
+(* |integer_vtable| -- a vtable representing methods on integers *)
+let integer_vtable = {
+	address = -1;
+	methods = integer_methods;
+};;
  
-(* |Integer_desc| -- a class_desc representing the Integer type *)
-and Integer_desc = {
+(* |integer_desc| -- a class_desc representing the integer type *)
+let integer_desc = {
 	class_name = "Integer";
 	parent_name = "Object";
-	parent_desc = Object_desc;
+	parent_desc = Some object_desc;
 	variables = [value_desc];
-	method_table = Integer_vtable;
-}
+	method_table = integer_vtable;
+};;
+
+let () = List.iter (fun md -> md.defining_class <- Some integer_desc) integer_desc.method_table.methods; ();;

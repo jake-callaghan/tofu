@@ -1,57 +1,80 @@
-(* tree.ml *)
+(* tofu/tree.ml *)
+(* contains everything needed to generate the ASTs *
+ * nodes are created during parsing of the (tokenized) source *
+ * descriptors are to be annotated during semantic analysis *
+ *)
 
 open Keiko
 
-type addr
+(*******************************)
+(* class/method/var decriptors *)
+(*******************************)
 
 (** |vtable| -- the method tables used to perform dynamic dispatch at runtime *)
 type vtable = {
-  address : addr;                     (* the assigned runtime label of this table *)
-  mutable methods : list method_desc  (* the methods to be pointed to by the table at runtime *)
+  mutable address : int;                   (* the assigned runtime label of this table *)
+  mutable methods : method_desc list       (* the methods to be pointed to by the table at runtime *)
 }
 
 (** |class_desc| *)
-and class_desc = 
+and class_desc =
   { class_name : string;                           (* name of the class *)
-    parent_name : string;                          (* name of the parent class *) 
-    mutable parent_desc : class_desc;              (* pointer to parent class' class_desc *)
-    mutable variables : (variable_desc ref) list;  (* pointers to instance variable descriptors of the class *)
+    parent_name : string;                          (* name of the parent class *)
+    mutable parent_desc : class_desc option;       (* pointer to parent class' class_desc *)
+    mutable variables : variable_desc list;        (* pointers to instance variable descriptors of the class *)
     mutable method_table : vtable;                 (* holds a list of method_descs appropriate to the class *)
   }
 
 (** |method_desc| *)
-and method_desc = 
-  { method_name : string;                   (* the method name *)
-    mutable defining_class : class_desc;    (* pointer to class_desc of the defining class, added during type-checking *)
-    return_type : string;                   (* name of class type returned *)
-    number_of_formals : int;                (* the number of formal parameters required *)
-    formals : formal list;                  (* the formal parameters *)
+and method_desc =
+  { method_name : string;                        (* the method name *)
+    mutable defining_class : class_desc option;  (* pointer to class_desc of the defining class, added during type-checking *)
+    return_type : string;                        (* name of class type returned *)
+    number_of_formals : int;                     (* the number of formal parameters required *)
+    formals : formal list;                       (* the formal parameters *)
+    body : stmt;                                 (* the method's body of statements *)
+    mutable vtable_index : int;                  (* the index of this method in the vtable s.t. offset := 4 * vtable_index *)
+    mutable locals : variable_desc list;         (* variable descriptors of this method's locally defined vars *)
   }
 
 (** |variable_desc| *)
-and variable_desc = 
-  { variable_name : string;                 (* the variables' name *)  
-    variable_type : string;                 (* the variables' static type *)
+and variable_desc =
+  { variable_name : string;                   (* the variables' name *)
+    mutable variable_type : string option;    (* the variables' static type *)
+    mutable variable_kind : var_kind option;  (* the type of reference this is *)
+    mutable offset : int;                     (* offset if local, arg or a field *)
   }
+
+(** |var| **)
+and var_kind =
+    Object  (* a globally defined object of type cname *)
+  | Field   (* the field of a class *)
+  | Local   (* a variable defined within a method *)
+  | Arg     (* a variable that was passed as a parameter to a method *)
 
 (** |expr_desc| *)
-and expr_desc = 
-  { guts : expr;                            (* the actual expression *)
+and expr_desc =
+  { expr_guts : expr;                       (* the actual expression *)
+    mutable expr_type : string option;      (* the type of the expression *)
   }
 
+(***********************)
+(* AST tree node types *)
+(***********************)
+
 (** |expr| type representing expressible values *)
-and expr = 
+and expr =
     Number of int
-  | Variable of string
-  | New of string
+  | Variable of variable_desc
+  | NewObject of string
   | Call of expr_desc * string * expr_desc list
 
 (** |stmt| type representing statements *)
 and stmt =
     Skip
   | Seq of stmt list
-  | UnitCall of expr_desc * string * expr_desc list 
-  | LocalVarDecl of variable_desc
+  | UnitCall of expr_desc * string * expr_desc list
+  | LocalVarDecl of variable_desc * string
   | AssignStmt of string * expr_desc
   | ReturnStmt of expr_desc
   | IfStmt of expr_desc * stmt * stmt
@@ -60,56 +83,63 @@ and stmt =
   | Newline
 
 (** declerative types that define features of classes (vars and methods), classes and the main *)
-and feature_decl = 
-    InstanceVarDecl of variable_desc
-  | MethDecl of method_desc * formal list * stmt 
+and feature_decl =
+    InstanceVarDecl of variable_desc * string
+  | MethDecl of method_desc
 
 and formal = Formal of string * string
 
 and class_decl = ClassDecl of class_desc * feature_decl list
 
-and main_decl = MainDecl of stmt 
+and main_body = MainBody of stmt
 
-let classDesc n p =                         (* creates an unannotated class_desc *)
-  { class_name = n; parent_name = p; methods = []; variables = [] }
-let methodDesc n rt formals1 =              (* creates an unannotated method_desc *)
-  { method_name = n; defining_class = classDesc "Object" ""; return_type = rt; formals = formals1; number_of_formals = List.length formals1; }
-let variableDesc n t =                      (* creates an unannotated variable_desc *)
-  { variable_name = n; 
-    variable_type = t;
-  }
-let exprDesc e =                (* creates an unannotated expr_desc *)
-  { guts = e; }
+type program = Program of main_body * class_decl list
 
-(** |add_method| -- add method_desc md, overriding any previous md's with the same name
-  * this allows for a subclass to override any method (all methods are virtual)
-  *)
-let add_method vt md = {
-  (* override an existing md in methods of the same name, otherwise append md *)
-  let rec search mds = match mds with 
-      [] -> List.append mds [md] (* not found -> append *)
-    | (md2 :: rest) -> 
-      if md2.method_name = md.method_name 
-      then (md :: rest) (* replace *)
-      else md2 :: (search rest) (* continue search *)
-  in search (vt.methods);
-  
-(** |find_method| -- try to extract a method descriptor with matching name 
-  * raising Not_found expception if not found 
-  *)
-let find_method vt mname = 
-  let has_same_name md = md.method_name = mname in 
-    List.find has_same_name (vt.methods) 
+(***************************)
+(* descriptor constructors *)
+(***************************)
 
-type program = Program of main_decl * class_decl list
+(* creates an unannotated class descriptor *)
+let classDesc n p = {
+  class_name = n;
+  parent_name = p;
+  parent_desc = None;
+  variables = [];
+  method_table = { address = -1; methods = []; }
+};;
+
+(* creates an unannotated method decriptor *)
+let methodDesc n rt formals1 body1 = {
+  method_name = n;
+  defining_class = None;
+  return_type = rt;
+  number_of_formals = List.length formals1;
+  formals = formals1;
+  body = body1;
+  vtable_index = -1; (* -1 indicates that this has yet to be assigned *)
+  locals = [];
+};;
+
+(* creates an unannotated variable descriptor *)
+let variableDesc n = {
+  variable_name = n;
+  variable_type = None;
+  variable_kind = None;
+  offset = -1;
+};;
+
+(* creates an unannotated expression descriptor *)
+let exprDesc e = {
+  expr_guts = e;
+  expr_type = None;
+};;
 
 let seq = function
     [] -> Skip
   | [s] -> s
-  | ss -> Seq ss  
+  | ss -> Seq ss;;
 
 (* Mike Spivey's Pretty printer with added tofu syntax tree constructs *)
-
 open Print
 
 let fTail f xs =
@@ -120,58 +150,87 @@ let fList f =
       [] -> fStr "[]"
     | x::xs -> fMeta "[$$]" [f x; fTail(f) xs]
 
-let fName x = fStr x.variable_name
+let fInt i = fStr (string_of_int i)
 
-let gutter ed = ed.guts
+let fStrOpt o = match o with
+| Some s -> fStr ("="^s)
+| None   -> fStr "=None"
 
-let rec fExpr =
-  function
+let fKindOpt o =
+  let str = match o with
+  | Some Object -> "Object"
+  | Some Field  -> "Field"
+  | Some Local  -> "Local"
+  | Some Arg    -> "Arg"
+  | _      -> "None"
+  in fStr ("="^str)
+
+let fClassDescOpt o = match o with
+| Some cd -> fStr ("="^cd.class_name)
+| None    -> fStr "=None"
+
+let fVarDesc vd =
+  fMeta "Variable($,$,$,$)" [fStr vd.variable_name; fStrOpt vd.variable_type; fKindOpt vd.variable_kind; fInt vd.offset]
+
+let rec fExprDesc ed = match ed.expr_guts with
       Number n ->
-        fMeta "Number_$" [fNum n]
-    | Variable x -> 
-        fMeta "Variable_$" [fStr x]
-    | New cname ->
-        fMeta "New_$" [fStr cname]
-    | Call (ed, meth, es) ->
-        fMeta "Call_($, $, $)" [fExpr (gutter ed); fStr meth; fList(fExpr) (List.map gutter es)]
+        fMeta "Number_$" [fNum n; fStrOpt ed.expr_type]
+    | Variable vd ->
+        fVarDesc vd
+    | NewObject cname ->
+        fMeta "New_$" [fStr cname; fStrOpt ed.expr_type]
+    | Call (ed, meth, eds) ->
+        fMeta "Call_($, $, $)" [fExprDesc ed; fStr meth; fList(fExprDesc) eds; fStrOpt ed.expr_type]
 
-let rec fStmt = 
+let rec fStmt =
   function
-      Skip -> 
+      Skip ->
         fStr "Skip"
-    | Seq ss -> 
+    | Seq ss ->
         fMeta "Seq_$" [fList(fStmt) ss]
-    | UnitCall (ed, meth, es) ->
-        fMeta "Call_($, $, $)" [fExpr (gutter ed); fStr meth; fList(fExpr) (List.map gutter es)]
-    | LocalVarDecl vd ->
-        fMeta "LocalVarDecl_($, $)" [fStr vd.variable_name; fStr vd.variable_type]
-    | AssignStmt (x, e) -> 
-        fMeta "Assign_($, $)" [fStr x; fExpr e.guts]
-    | ReturnStmt e ->
-        fMeta "Return_($)" [fExpr e.guts]
-    | PrintStmt e -> 
-        fMeta "Print_($)" [fExpr e.guts]
-    | Newline -> 
+    | UnitCall (ed, meth, eds) ->
+        fMeta "Call_($, $, $)" [fExprDesc ed; fStr meth; fList(fExprDesc) eds]
+    | LocalVarDecl (vd,t) ->
+        fMeta "LocalVarDecl_($, $)" [fStr vd.variable_name; fStr t; fStrOpt vd.variable_type]
+    | AssignStmt (x, ed) ->
+        fMeta "Assign_($, $)" [fStr x; fExprDesc ed]
+    | ReturnStmt ed ->
+        fMeta "Return_($)" [fExprDesc ed]
+    | PrintStmt ed ->
+        fMeta "Print_($)" [fExprDesc ed]
+    | Newline ->
         fStr "Newline"
-    | IfStmt (e, s1, s2) ->
-        fMeta "IfStmt_($, $, $)" [fExpr e.guts; fStmt s1; fStmt s2]
-    | WhileStmt (e, s) -> 
-        fMeta "WhileStmt_($, $)" [fExpr e.guts; fStmt s]
+    | IfStmt (ed, s1, s2) ->
+        fMeta "IfStmt_($, $, $)" [fExprDesc ed; fStmt s1; fStmt s2]
+    | WhileStmt (ed, s) ->
+        fMeta "WhileStmt_($, $)" [fExprDesc ed; fStmt s]
 
-let rec fFormal (Formal (n,t)) = 
+let rec fFormal (Formal (n,t)) =
   fMeta "Formal_($, $)" [fStr n; fStr t]
 
-let rec fFeature = 
-    function
-        InstanceVarDecl vd ->
-          fMeta "InstanceVarDecl_($, $)" [fStr vd.variable_name; fStr vd.variable_type]
-      | MethDecl (md,fs,ss) ->
-          fMeta "MethDecl_($, $, $, $)" [fStr md.method_name; fStr md.return_type; fList(fFormal) fs; fStmt ss]
+let fMethodDesc md =
+  fMeta "MethDecl_($,$,$,$,$,$,$,$)" [
+    fStr md.method_name;
+    fStr md.return_type;
+    fClassDescOpt md.defining_class;
+    fInt md.number_of_formals;
+    fList(fFormal) md.formals;
+    fInt md.vtable_index;
+    fList(fVarDesc) md.locals;
+    fStmt md.body; ]
+
+let fVTable vt =
+  fMeta "VTable_($,$)" [fInt vt.address; fList(fMethodDesc) vt.methods]
 
 let rec fClass (ClassDecl (cd,fs)) =
-  fMeta "ClassDecl_($, $, $)" [fStr cd.class_name; fStr cd.parent_name; fList(fFeature) fs]
+  fMeta "ClassDecl_($, $, $, $)" [
+    fStr cd.class_name;
+    fStr cd.parent_name;
+    fClassDescOpt cd.parent_desc;
+    fList(fVarDesc) cd.variables;
+    fVTable cd.method_table ]
 
-let rec fMain (MainDecl ss) = 
+let rec fMain (MainBody ss) =
   fMeta "Main_($)" [fStmt ss]
 
 let print_tree fp (Program (main_decl,class_decls)) =

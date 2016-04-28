@@ -2,22 +2,220 @@
 
 open Tree
 open Env
+open Hashtbl
+open Errors
 
-(** |line_no| -- keeps track of line number for any errors messages *)
-let line_no = ref 1
+let verbose = ref false;;
 
-(** |annotate| -- check AST for type errors and flesh out definitions *)
-let annotate (Program (mainDecl,classDecls)) = ()
+(* keeps track of already checked method bodies *)
+let checked_methods = ref (Hashtbl.create 100);;
 
-(** |check_stmt| ** -- check and annotate statements within method md, class cd *)
-let rec check_stmt env cd md = function
-	  Skip -> ()
-	| Seq ss -> 
-		List.iter (check_stmt env) ss
-	| UnitCall (ed,mname,eds) ->
-		check_method env (ed,mname,eds)
-	| LocalVarDecl vd ->
-		
+(* has method mname with defining class cname already been checked? *)
+let method_already_checked cname mname =
+	try let () = Hashtbl.find !checked_methods (cname,mname) in true
+	with Not_found -> false;;
 
-and check_method env (e_desc,m_name,arg_e_descs) = 
-	()
+(* method mname has been successfully checked in cname *)
+let method_was_checked cname mname =
+	if (!verbose) then print_string ("["^cname^"."^mname^"]\nOK\n");
+	Hashtbl.add !checked_methods (cname,mname) ();;
+
+(* check and annotate an expression descriptor found in a particular mdesc.body *)
+let rec check_expr mdesc edesc =
+  match edesc.expr_guts with
+  | Number n -> edesc.expr_type <- Some "Integer"
+  | Variable vdesc ->
+  		begin
+  		(* is this a (declared earlier) local var? *)
+  		try let vd = List.find (fun localvd -> localvd.variable_name = vdesc.variable_name) mdesc.locals in
+  			vdesc.variable_kind <- Some Local;
+  			vdesc.variable_type <- vd.variable_type;
+  			edesc.expr_type <- vd.variable_type;
+  		with Not_found ->
+  			(* is this a method parameter? *)
+  			let ftyper (Formal (fname,ftype)) = ftype in
+  			try let fm = List.find (fun (Formal (fname,ftype)) -> fname = vdesc.variable_name) mdesc.formals in
+  				vdesc.variable_kind <- Some Arg;
+  				vdesc.variable_type <- Some (ftyper fm);
+  				edesc.expr_type <- Some (ftyper fm);
+	  		with Not_found ->
+	  		(* is this a field variable of the class? *)
+	  			let vd = find_instance_var (unwrap mdesc.defining_class) vdesc.variable_name in
+	  			vdesc.variable_kind <- Some Field;
+	  			vdesc.variable_type <- vd.variable_type;
+	  			edesc.expr_type <- vdesc.variable_type;
+	  	end
+  | NewObject cname ->
+  		(* is this a defined class? *)
+  		let cdesc = find_class cname in edesc.expr_type <- Some cname
+  | Call (edesc2, mname, arg_edescs) ->
+  		(* get the type etype of the receiver *)
+ 		if edesc2.expr_type = None then check_expr mdesc edesc2 else ();
+  	let etype = unwrap edesc2.expr_type in
+  	(* is the method defined in class etype? *)
+  	let mdesc2 = find_method (find_class etype) mname in
+  	(* do the arguments obey the method's signature? *)
+  	if (List.length arg_edescs <> mdesc2.number_of_formals) then argumentError ("Wrong number of arguments for method "^(unwrap mdesc2.defining_class).class_name^"."^mdesc2.method_name)
+		else (* are these argument expressions subtypes of the expected types? *)
+			let get_arg_type arg_edesc =
+				if arg_edesc.expr_type = None then check_expr mdesc arg_edesc else () in
+			let arg_types =
+				List.map (get_expr_type mdesc) arg_edescs in
+			let f argtype (Formal (fname,ftype)) =
+				if not (is_subclass argtype ftype) then argumentError ("The expression supplied as argument "^fname^" is not of type "^ftype) else () in
+				List.iter2 f arg_types mdesc2.formals;
+				edesc.expr_type <- Some mdesc2.return_type
+and
+(* return the type name of an expression occuring in mdesc *)
+get_expr_type mdesc edesc = match edesc.expr_type with
+	| None -> check_expr mdesc edesc; get_expr_type mdesc edesc
+	| Some cname -> cname;;
+
+(* check the statements in a method descriptor *)
+let rec check_stmt mdesc body =
+	let methstr = if (mdesc.defining_class = None) then "MAIN" else (unwrap mdesc.defining_class).class_name^"."^mdesc.method_name in
+	match body with
+	| Skip -> ()
+	| Seq ss -> List.iter (check_stmt mdesc) ss
+	| UnitCall (edesc,mname,arg_edescs) ->
+		(* is the receiver well-defined? *)
+		let etype = get_expr_type mdesc edesc in
+		(* is this method defined in etype? *)
+		let mdesc2 = find_method (find_class etype) mname in
+		(* do the arguments match the method's signature? *)
+		if (List.length arg_edescs <> mdesc2.number_of_formals) then argumentError ("Wrong number of arguments in call to method"^(unwrap mdesc2.defining_class).class_name^"."^mname)
+		else let arg_types = List.map (get_expr_type mdesc) arg_edescs in
+   		     let f argtype (Formal (fname,ftype)) = if not (is_subclass argtype ftype) then argumentError ("The expression supplied as argument "^fname^" is not of type "^ftype) else () in
+			 List.iter2 f arg_types mdesc2.formals; (); print_string ("marker 5\n");
+	| LocalVarDecl (vdesc,vtype) ->
+		(* is this variable already declared within the method? *)
+		begin try let vd = List.find (fun localvd -> (localvd.variable_name = vdesc.variable_name)) mdesc.locals
+			  in variableNameError ("Variable "^vd.variable_name^" is already declared locally twice in method "^methstr)
+		with Not_found ->
+			(* is the static type a defined class? *)
+			find_class vtype;
+			(* annotate the descriptor and add update the method's list of local vars *)
+			vdesc.variable_type <- Some vtype;
+			vdesc.variable_kind <- Some Local;
+			mdesc.locals <- List.append mdesc.locals [vdesc];
+		end
+	| AssignStmt (vname, edesc) ->
+		(* is the vname associated to a declared variable? *)
+		let vdesc =
+			(* locally defined? *)
+			try List.find (fun localvd -> localvd.variable_name = vname) mdesc.locals
+			(* is vname a class field? *)
+			with Not_found -> find_instance_var (unwrap mdesc.defining_class) vname
+		in
+		(* is the RHS a subtype of the LHS? *)
+		let etype = get_expr_type mdesc edesc in
+		if is_subclass etype (unwrap vdesc.variable_type) then ()
+		else semanticError ("Cannot assign expression of type "^etype^" to variable "^vname^" of type "^(unwrap vdesc.variable_type)^" in method "^methstr)
+	| ReturnStmt edesc ->
+		let etype = get_expr_type mdesc edesc in
+		if is_subclass etype mdesc.return_type then ()
+		else semanticError ("Returned expression is of type "^etype^", but "^mdesc.return_type^ " was expected in "^methstr)
+	| IfStmt (edesc, thenstmt, elsestmt) ->
+		let etype = get_expr_type mdesc edesc in
+		if not (is_subclass etype "Boolean") then semanticError ("Condition expression of type Boolean is required in "^methstr)
+		else check_stmt mdesc thenstmt; check_stmt mdesc elsestmt
+	| WhileStmt (edesc, body2) ->
+		let etype = get_expr_type mdesc edesc in
+		if (not (is_subclass etype "Boolean")) then (semanticError ("Guard expression of type Boolean is required in "^methstr^", but "^etype^" was given"))
+		else check_stmt mdesc body2
+	| PrintStmt edesc ->
+	  let etype = get_expr_type mdesc edesc in ()
+	| Newline -> ();;
+
+(* returns true if the sequence of statements has a return statement *)
+let rec check_return body =	match body with
+	  Seq ss -> List.exists (fun s -> check_return s) ss
+	| ReturnStmt _ -> true
+	| WhileStmt (_,body2) -> check_return body2
+	| IfStmt (_,thenstmt,elsestmt) -> (check_return thenstmt || check_return elsestmt)
+	| _ -> false;;
+
+(* check a method *)
+let check_method mdesc =
+	if (!verbose) then print_string ("checking "^(unwrap mdesc.defining_class).class_name^"."^mdesc.method_name^"...\n");
+	(* is the return type Unit? if not, is this r.t. defined? *)
+	if (mdesc.return_type <> "Unit") then (find_class mdesc.return_type; ());
+	(* check the parameters are well defined *)
+	let seen = Hashtbl.create 10 in
+	List.iter (fun (Formal (pname,ptype)) ->
+		begin
+			(* is this name already used by another param? *)
+			print_string (pname^" // ");
+
+			try let p = Hashtbl.find seen pname in variableNameError ("Parameter name "^pname^" is used twice.")
+			with Not_found ->
+				(* add param the table of seen names *)
+				Hashtbl.add seen pname true;
+				(* check type is defined *)
+				find_class ptype; ()
+		end  ) mdesc.formals;
+	(* check the method's body *)
+	check_stmt mdesc mdesc.body;
+	let cd = unwrap mdesc.defining_class in
+	let mstr = cd.class_name^"."^mdesc.method_name in
+	(* check the existence/abscence of a return statement *)
+	if (mdesc.return_type = "Unit" && check_return mdesc.body) then semanticError ("Method "^mstr^" contains an unexpected return statement.")
+	else if (mdesc.return_type <> "Unit" && (not (check_return mdesc.body))) then semanticError ("Method "^mstr^" does not have an expected return statement.") else ();;
+
+(* check the static types of a class' fields are defined *)
+let check_fields cdesc =
+	let f vdesc =
+		if (!verbose) then print_string ("["^cdesc.class_name^"."^vdesc.variable_name^"]\n");
+		find_class (unwrap vdesc.variable_type);
+		if (!verbose) then print_string ("OK\n")
+	in List.iter f cdesc.variables;;
+
+(* check the methods defined in cdesc *)
+let check_methods cdesc =
+	List.iter (fun mdesc ->
+		let pname = cdesc.parent_name in
+		let cname = cdesc.class_name and mname = mdesc.method_name in
+			(* have we checked this method already? if not -> check it! *)
+			if (method_already_checked pname mname) then () else check_method mdesc;
+			method_was_checked cname mname;
+	) cdesc.method_table.methods;;
+
+(* check the main sequence of statements *)
+let check_main body =
+	(* wrap the body in method_descriptor *)
+	let mdesc = methodDesc "main" "-" [] body in
+	(* the main 'method' should not return anything *)
+	if check_return body then semanticError "Main body should not return a value" else
+	(* check the body's statements *)
+	check_stmt mdesc body;;
+
+(** |annotate| -- check ASTs for type errors and flesh out descriptors *)
+let annotate (Program (MainBody body,classDecls)) verboseMode =
+	verbose := verboseMode;
+
+	(* set library methods to 'checked' *)
+	List.iter (fun (cname,cdesc) ->
+		List.iter (fun mdesc ->
+			method_was_checked cname mdesc.method_name
+		) cdesc.method_table.methods
+	) library_descs;
+
+	(* fill out the class descriptors and add to the environment *)
+	List.iter (fun (ClassDecl (cdesc,fdecls)) -> add_class cdesc fdecls) classDecls;
+
+	let cdescs = List.map (fun (ClassDecl (a,b)) -> a) classDecls in
+
+	if (!verbose) then print_string "---checking fields of all classes---\n";
+
+	(* check the fields of all classes *)
+	List.iter check_fields cdescs;
+
+	if (!verbose) then print_string "---checking the methods for each class---\n";
+
+	(* check the methods for each class *)
+	List.iter check_methods cdescs;
+
+	if (!verbose) then print_string "---checking the main method---\n";
+
+	(* check the main method *)
+	check_main body;;
