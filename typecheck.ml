@@ -24,6 +24,7 @@ let method_was_checked cname mname =
 let rec check_expr mdesc edesc =
   match edesc.expr_guts with
   | Number n -> edesc.expr_type <- Some "Integer"
+	| Boolean b -> edesc.expr_type <- Some "Boolean"
   | Variable vdesc ->
   		begin
   		(* is this a (declared earlier) local var? *)

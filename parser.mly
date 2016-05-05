@@ -2,6 +2,7 @@
 
 %token<string> 		IDENT
 %token<int>	  		NUMBER
+%token 						TRUE FALSE
 
 /** decleratives */
 %token 				MAIN CLASS EXTENDS NEW VAR DEF
@@ -28,19 +29,19 @@ class_decl_list :
 	  /* empty */										{ [] }
 	| class_decl class_decl_list						{ $1 :: $2 };
 
-class_decl : 
+class_decl :
 	  CLASS IDENT LCURL feature_decl_list RCURL				   { ClassDecl (classDesc $2 "Object", $4) }
 	| CLASS IDENT EXTENDS IDENT LCURL feature_decl_list RCURL  { ClassDecl (classDesc $2 $4, $6) };
 
 feature_decl_list :
 	  /* empty */										{ [] }
-	| feature_decl feature_decl_list					{ $1 :: $2 };	 
+	| feature_decl feature_decl_list					{ $1 :: $2 };
 
 feature_decl :
-	  DEF IDENT formals COLON IDENT ASSIGN LCURL stmts RCURL { MethDecl (methodDesc $2 $5 $3 $8) } 
+	  DEF IDENT formals COLON IDENT ASSIGN LCURL stmts RCURL { MethDecl (methodDesc $2 $5 $3 $8) }
 	| VAR IDENT COLON IDENT SEMI	{ InstanceVarDecl ((variableDesc $2),$4) };
 
-formals : 
+formals :
 	  LBRAC RBRAC					{ [] }
 	| LBRAC formal_list	RBRAC	    { $2 };
 
@@ -75,12 +76,14 @@ stmt :
 /*********** Expressions ************/
 
 expr :
-	  NUMBER 							{ exprDesc (Number $1) }
-	| IDENT								{ exprDesc (Variable (variableDesc $1)) }
+	  NUMBER 								{ exprDesc (Number $1)  }
+	|	TRUE						 			{ exprDesc (Boolean true) }
+	| FALSE							  	{ exprDesc (Boolean false) }
+	| IDENT							   	{ exprDesc (Variable (variableDesc $1)) }
 	| NEW IDENT 						{ exprDesc (NewObject $2) }
-	| expr DOT IDENT args 				{ exprDesc (Call ($1, $3, $4)) };
+	| expr DOT IDENT args	  { exprDesc (Call ($1, $3, $4)) };
 
-args : 
+args :
 	  LBRAC RBRAC 						{ [] }
 	| LBRAC expr_list RBRAC		     	{ $2 };
 

@@ -252,26 +252,6 @@ static void fix_labels(phrase q) {
                q->q_target = find_label(q->q_arg[j]);
 }
 
-/* do_labels -- compute all jump targets */
-static void do_labels(void) {
-     phrase q;
-     sort_labels();
-     for_phrases (q) fix_labels(q);
-}
-
-/* calc_addrs -- calculate instruction addresses based on current templates */
-static void calc_addrs(void) {
-     phrase q;
-     int a = 0;
-
-     for_phrases (q) {
-          q->q_addr = a;
-          a += q->q_templ->t_size;
-     }
-
-     code_size = a;
-}
-
 /* displacement -- calculate branch displacement */
 static int displacement(phrase q) {
      /* Phrase |q| is a branch instruction.  The signed displacement
@@ -331,7 +311,7 @@ static void print_args(phrase q) {
 }
 #endif
 
-static phrase do_template(template t, char *rands[], phrase buf);
+static phrase do_template(template t, char *rands[], phrase buf, int cxt[]);
 
 /* expand -- replace macro by its expansion */
 static phrase expand(phrase q) {
@@ -339,27 +319,17 @@ static phrase expand(phrase q) {
      char *words[10];
      template t = q->q_templ, t1;
      unsigned int i, n;
-     char *s;
-     const char *u;
      phrase r = q->q_prev, q1;
 
      for (i = 0; t->t_macro[i] != NULL; i++) {
-          for (s = buf, u = t->t_macro[i]; *u != '\0'; u++) {
-               if (*u == '$')
-                    s += sprintf(s, "%d", q->q_arg[*++u - 'a']);
-               else
-                    *s++ = *u;
-          }
-          *s++ = '\n'; *s = '\0';
-          
+          strcpy(buf, t->t_macro[i]);
           n = split_line(buf, words);
           t1 = find_template(words[0]);
           if (strlen(t1->t_pattern) != n-1 || t->t_size < 0) 
                panic("*macro expansion failed");
 
           /* Insert expansion before original phrase */
-          q1 = do_template(t1, &words[1], q);
-          q1->q_addr = q->q_addr;
+          q1 = do_template(t1, &words[1], q, q->q_arg);
           fix_labels(q1);
      }
 
@@ -402,7 +372,10 @@ static boolean check_matches(void) {
 /* assemble -- assemble instructions */
 static void assemble(void) {
      boolean ok;
+     phrase q;
      int trial = 0;
+
+     for_phrases (q) fix_labels(q);
 
      /* A tentative assignment of templates has already been computed,
         but the arguments may not fit in the field sizes assigned.  So
@@ -418,12 +391,20 @@ static void assemble(void) {
         instruction larger cannot allow another to be smaller. */
 
      do {
+          int a = 0;
           trial++;
 #ifdef DEBUG
           if (dflag > 0)
                printf("Checking templates (pass %d)\n", trial);
 #endif    
-          calc_addrs();         /* Calculate address of each instruction */
+
+          /* Calculate address of each instruction */
+          for_phrases (q) {
+               q->q_addr = a;
+               a += q->q_templ->t_size;
+          }
+
+          code_size = a;
           ok = check_matches(); /* Revise template choices */
      } while (!ok);
 }
@@ -475,7 +456,10 @@ static void make_binary(void) {
      }
 }
 
-static int get_arg(char tmpl, char *rand, template t) {
+static int get_arg(char tmpl, char *rand, template t, int cxt[]) {
+     if (rand[0] == '$' && cxt != NULL)
+          return cxt[rand[1] - 'a'];
+
      switch (tmpl) {
      case '1':
      case '2':
@@ -487,7 +471,7 @@ static int get_arg(char tmpl, char *rand, template t) {
 
      case 'R':
      case 'S':
-          return atoi(rand);
+          return make_label(find_symbol(rand));
 
      case 'K':
      case 'L':
@@ -500,7 +484,7 @@ static int get_arg(char tmpl, char *rand, template t) {
 }
 
 /* do_template -- enter an instruction */
-static phrase do_template(template t, char *rands[], phrase rgt) { 
+static phrase do_template(template t, char *rands[], phrase rgt, int cxt[]) { 
      /* Template t determines the number and kinds of operands for the
         instruction; depending on the values of the operands, it may or
         may not end up actually matching the instruction. */
@@ -513,7 +497,7 @@ static phrase do_template(template t, char *rands[], phrase rgt) {
      q->q_name = t->t_name;
      q->q_templ = t;
      for (i = 0; patt[i] != '\0'; i++) 
-          q->q_arg[i] = get_arg(patt[i], rands[i], t);
+          q->q_arg[i] = get_arg(patt[i], rands[i], t, cxt);
      q->q_sym = NULL;
      q->q_target = NULL;
      q->q_prev = lft; q->q_next = rgt;
@@ -528,7 +512,7 @@ struct _template mark = {
 };
 
 static phrase put_mark(symbol s) {
-     phrase q = do_template(&mark, NULL, abuf);
+     phrase q = do_template(&mark, NULL, abuf, NULL);
      q->q_sym = s;
      return q;
 }
@@ -600,7 +584,7 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
      case D_LABEL:
           check_inproc(dir);
           /* Each label is defined as the |abuf| index of its target */
-          def_label(atoi(rands[0]), put_mark(NULL));
+          def_label(find_symbol(rands[0]), put_mark(NULL));
           break;
 
      case D_STRING:
@@ -731,7 +715,6 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
      case D_END:
           /* End of procedure body */
           check_inproc(dir);
-          do_labels();          /* Annotate branches with targets */
           assemble();           /* Finally choose templates */
           fix_stackmaps();      /* Compile the stack maps */
           make_binary();        /* Output the code */
@@ -795,7 +778,7 @@ void put_inst(const char *name, char *rands[], unsigned nrands) {
           do_directive(t->t_name, t->t_op, rands, nrands);
      else {
           check_inproc(name);
-          do_template(t, rands, abuf);
+          do_template(t, rands, abuf, NULL);
      }
 }
 

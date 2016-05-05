@@ -2,30 +2,31 @@
 HOST := $(shell uname -s)-$(shell uname -m)
 
 ifeq ($(HOST),Linux-i686)
-  OK = 1
-  CC = gcc
+  _CC = gcc
 endif
 
 ifeq ($(HOST),Linux-x86_64)
-  OK = 1
-  CC = gcc -m32
+  _CC = gcc -m32
 endif
 
 ifeq ($(HOST),Darwin-i386)
-  OK = 1
-  CC = gcc -m32
+  _CC = gcc -m32
 endif
 
 ifeq ($(HOST),Darwin-x86_64)
-  OK = 1
-  CC = gcc -m32
+  _CC = gcc -m32
 endif
 
 ifeq ($(HOST),Linux-armv6l)
-  OK = 1
-  CC = gcc
+  _CC = gcc
 endif
 
-ifndef OK
+ifeq ($(HOST),Linux-armv7l)
+  _CC = gcc
+endif
+
+ifndef _CC
 $(error Can't configure for host type $(HOST))
 endif
+
+CC = $(_CC)

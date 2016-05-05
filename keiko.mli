@@ -1,4 +1,4 @@
-(* keiko.mli *)
+(* tofu/keiko.mli *)
 
 (* |codelab| -- type of code labels *)
 type codelab = int
@@ -7,7 +7,7 @@ type codelab = int
 val label : unit -> codelab
 
 (* |op| -- type of picoPascal operators *)
-type op = Plus | Minus | Times | Div | Mod | Eq 
+type op = Plus | Minus | Times | Div | Mod | Eq
   | Uminus | Lt | Gt | Leq | Geq | Neq | And | Or | Not | PlusA
 
 (* op_name -- map an operator to its name *)
@@ -28,7 +28,6 @@ type code =
   | BINOP of op                 (* Perform binary operation (op) *)
   | LABEL of codelab            (* Set code label *)
   | JUMP of codelab             (* Unconditional branch (dest) *)
-  | JUMPB of bool * codelab     (* Branch on boolean (val, dest) *)
   | JUMPC of op * codelab       (* Conditional branch (op, dest) *)
   | PCALL of int                (* Call procedure *)
   | PCALLW of int               (* Proc call with result (nargs) *)
@@ -38,12 +37,15 @@ type code =
   | CASEARM of int * codelab    (* Case value and label *)
   | PACK                        (* Pack two values into one *)
   | UNPACK                      (* Unpack one value into two *)
+  | DUP
+  | POP
+
   | LINE of int
   | SEQ of code list
   | NOP
 
 (* |fInst| -- format an instruction for |printf| *)
-(* val fInst : code -> Print.arg *)
+val fInst : code -> Print.arg
 
 (* |canon| -- flatten a code sequence *)
 val canon : code -> code

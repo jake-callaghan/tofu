@@ -1,0 +1,14 @@
+Host zeta
+  User guest
+  ProxyCommand ssh -F @DIR@/sshconfig spivey.oriel.ox.ac.uk %h
+  ControlMaster auto
+  ControlPath ~/.ssh/sockets/%r@%h-%p
+  ControlPersist 600
+
+Host spivey.oriel.ox.ac.uk
+  User piconnect
+
+Host *
+  IdentityFile @DIR@/guest_rsa
+  PasswordAuthentication no
+  UserKnownHostsFile @DIR@/known_hosts

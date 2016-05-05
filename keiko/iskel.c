@@ -143,6 +143,11 @@ $$ jump table
           }
 #endif
 
+#ifdef DEBUG
+          if (sp > (value *) ((uchar *) fp - cp[CP_FRAME].i))
+               panic("*value stack underflow");
+#endif
+
 #ifdef PROFILE
           ticks++;
 #endif

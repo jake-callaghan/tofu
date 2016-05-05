@@ -102,7 +102,7 @@
 #define NORETURN __attribute__ ((noreturn))
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "mike@comlab.ox.ac.uk"
+#define PACKAGE_BUGREPORT "<yourself>"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "obc"

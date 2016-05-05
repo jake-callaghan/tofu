@@ -1,5 +1,7 @@
 boolean.cmo : tree.cmi object.cmo
 boolean.cmx : tree.cmx object.cmx
+boolean_methods.cmo : lib.cmi keiko.cmi integer_methods.cmo
+boolean_methods.cmx : lib.cmx keiko.cmx integer_methods.cmx
 env.cmo : tree.cmi object.cmo integer.cmo errors.cmo boolean.cmo env.cmi
 env.cmx : tree.cmx object.cmx integer.cmx errors.cmx boolean.cmx env.cmi
 env.cmi : tree.cmi
@@ -7,16 +9,26 @@ errors.cmo : print.cmi
 errors.cmx : print.cmx
 integer.cmo : tree.cmi object.cmo
 integer.cmx : tree.cmx object.cmx
+integer_methods.cmo : lib.cmi keiko.cmi
+integer_methods.cmx : lib.cmx keiko.cmx
 keiko.cmo : tree.cmi source.cmi print.cmi keiko.cmi
 keiko.cmx : tree.cmx source.cmx print.cmx keiko.cmi
-keiko.cmi :
+keiko.cmi : print.cmi
 kgen.cmo : kgen.cmi
 kgen.cmx : kgen.cmi
 kgen.cmi : tree.cmi
 lexer.cmo : tree.cmi source.cmi parser.cmi
 lexer.cmx : tree.cmx source.cmx parser.cmx
+lib.cmo : tree.cmi object.cmo keiko.cmi integer.cmo env.cmi boolean.cmo \
+    lib.cmi
+lib.cmx : tree.cmx object.cmx keiko.cmx integer.cmx env.cmx boolean.cmx \
+    lib.cmi
+lib.cmi : tree.cmi keiko.cmi
+mem.cmi : tree.cmi
 object.cmo : tree.cmi
 object.cmx : tree.cmx
+object_methods.cmo : lib.cmi keiko.cmi
+object_methods.cmx : lib.cmx keiko.cmx
 parser.cmo : tree.cmi parser.cmi
 parser.cmx : tree.cmx parser.cmi
 parser.cmi : tree.cmi
@@ -33,8 +45,6 @@ tofuc.cmx : typecheck.cmx tree.cmx source.cmx print.cmx parser.cmx lexer.cmx \
 tree.cmo : print.cmi keiko.cmi tree.cmi
 tree.cmx : print.cmx keiko.cmx tree.cmi
 tree.cmi : keiko.cmi
-tree_BACKUP.cmo : print.cmi keiko.cmi
-tree_BACKUP.cmx : print.cmx keiko.cmx
 typecheck.cmo : tree.cmi errors.cmo env.cmi typecheck.cmi
 typecheck.cmx : tree.cmx errors.cmx env.cmx typecheck.cmi
 typecheck.cmi : tree.cmi env.cmi

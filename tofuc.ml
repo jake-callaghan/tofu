@@ -7,10 +7,11 @@ open Typecheck
 (* |main| -- main program *)
 let main () =
   let dflag = ref true in
+  let optflag = ref false in
   let fns = ref [] in
   let usage =  "Usage: ppc [-d] file.p" in
   Arg.parse [("-d", Arg.Set dflag, " Print the tree");
-      ("-O", Arg.Unit (fun () -> Kgen.optflag := true), " Peephole optimiser")]
+      ("-O", Arg.Unit (fun () -> optflag := true), " Peephole optimiser")]
     (function s -> fns := !fns @ [s]) usage;
   if List.length !fns <> 1 then begin
     fprintf stderr "$\n" [fStr usage]; exit 2

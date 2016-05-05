@@ -1,0 +1,11 @@
+#!/bin/sh
+
+KEIKO=../keiko
+DIR=`pwd`
+
+set -x
+
+./ppc $* >a.k \
+    && $KEIKO/pplink -custom -nostdlib -i $DIR/ppx \
+        lib.k a.k -o a.out >/dev/null \
+    && chmod +x a.out

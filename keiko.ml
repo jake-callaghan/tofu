@@ -1,22 +1,22 @@
-(* keiko.ml *)
+(* tofu/keiko.ml *)
 
-open Tree 
+open Tree
 open Print
 
 (* |codelab| -- type of code labels *)
 type codelab = int
 
-(* |lab| -- last used code label *)
-let lab = ref 0
+(* |lastlab| -- last used code label *)
+let lastlab = ref 0
 
 (* |label| -- allocate a code label *)
-let label () = incr lab; !lab
+let label () = incr lastlab; !lastlab
 
 (* |fLab| -- format a code label for printf *)
-let fLab n = fMeta "$" [fNum n]
+let fLab n = fMeta "L$" [fNum n]
 
 (* |op| -- type of picoPascal operators *)
-type op = Plus | Minus | Times | Div | Mod | Eq 
+type op = Plus | Minus | Times | Div | Mod | Eq
   | Uminus | Lt | Gt | Leq | Geq | Neq | And | Or | Not | PlusA
 
 (* |code| -- type of intermediate instructions *)
@@ -34,7 +34,6 @@ type code =
   | BINOP of op                 (* Perform binary operation (op) *)
   | LABEL of codelab            (* Set code label *)
   | JUMP of codelab             (* Unconditional branch (dest) *)
-  | JUMPB of bool * codelab     (* Branch on boolean (val, dest) *)
   | JUMPC of op * codelab       (* Conditional branch (op, dest) *)
   | PCALL of int                (* Call procedure *)
   | PCALLW of int               (* Proc call with result (nargs) *)
@@ -44,6 +43,8 @@ type code =
   | CASEARM of int * codelab    (* Case value and label *)
   | PACK                        (* Pack two values into one *)
   | UNPACK                      (* Unpack one value into two *)
+  | DUP
+  | POP
 
   | LINE of int
   | SEQ of code list
@@ -54,8 +55,8 @@ let op_name =
   function
       Plus -> "Plus" | Minus -> "Minus" | Times -> "Times"
     | Div -> "Div" | Mod -> "Mod" | Eq -> "Eq"
-    | Uminus -> "Uminus" | Lt -> "Lt" | Gt -> "Gt" 
-    | Leq -> "Leq" | Geq -> "Geq" | Neq -> "Neq" 
+    | Uminus -> "Uminus" | Lt -> "Lt" | Gt -> "Gt"
+    | Leq -> "Leq" | Geq -> "Geq" | Neq -> "Neq"
     | And -> "And" | Or -> "Or" | Not -> "Not"
     | PlusA -> "PlusA"
 
@@ -78,8 +79,6 @@ let fInst =
     | BINOP w ->        fMeta "$" [fOp w]
     | LABEL l ->        fMeta "LABEL $" [fLab l]
     | JUMP l ->         fMeta "JUMP $" [fLab l]
-    | JUMPB (b, l) ->   fMeta "$ $" 
-                          [fStr (if b then "JUMPT" else "JUMPF"); fLab l]
     | JUMPC (w, l) ->   fMeta "J$ $" [fOp w; fLab l]
     | PCALL n ->        fMeta "PCALL $" [fNum n]
     | PCALLW n ->       fMeta "PCALLW $" [fNum n]
@@ -89,7 +88,8 @@ let fInst =
     | CASEARM (v, l) -> fMeta "CASEARM $ $" [fNum v; fLab l]
     | PACK ->           fStr "PACK"
     | UNPACK ->         fStr "UNPACK"
-
+    | DUP ->            fStr "DUP 0"
+    | POP ->            fStr "POP 1"
     | LINE n ->         fMeta "LINE $" [fNum n]
     | SEQ _ ->          fStr "SEQ ..."
     | NOP ->            fStr "NOP"
@@ -106,28 +106,172 @@ let canon x =
     match x with
         SEQ xs -> List.fold_right accum xs ys
       | NOP -> ys
-      | LINE n -> 
-          if n = 0 then 
-            ys 
+      | LINE n ->
+          if n = 0 then
+            ys
           else begin
             match ys with
-                ([] | LINE _ :: _) -> ys
+                [] -> ys
+              | LINE _ :: _ -> ys
               | _ -> LINE n :: ys
           end
       | _ -> x :: ys in
   SEQ (accum x [])
 
-(* |output| -- output code sequence *)
-let output code =
+
+(* SANITY CHECKS *)
+
+(* The checks implemented here ensure that the value stack is used in a
+   consistent way, and that CASEJUMP instructions are followed by the
+   correct number of case labels.  There are a few assumptions, the main
+   one being that backwards jumps leave nothing on the stack. *)
+
+(* Compute pair (a, b) if an instruction pops a values and pushes b *)
+let delta =
+  function
+      CONST _ | GLOBAL _ | LOCAL _ | LDGW _ -> (0, 1)
+    | STGW _ -> (1, 0)
+    | LOADW | LOADC -> (1, 1)
+    | STOREW | STOREC -> (2, 0)
+    | MONOP _ -> (1, 1)
+    | BINOP _ -> (2, 1)
+    | PCALL n -> (n+2, 0)
+    | PCALLW n -> (n+2, 1)
+    | RETURNW -> (1, 0)
+    | BOUND _ -> (2, 1)
+    | PACK -> (2, 1)
+    | UNPACK -> (1, 2)
+    | LINE _ -> (0, 0)
+    | DUP -> (1, 2)
+    | POP -> (1, 0)
+    | i -> failwith (sprintf "delta $" [fInst i])
+
+(* Output code and check for basic sanity *)
+let check_and_output code =
+  let line = ref 0 in
+
+  (* Output an instruction *)
+  let out =
+    function
+        LINE n ->
+          if n <> 0 && !line <> n then begin
+            printf "! $\n" [fStr (Source.get_line n)];
+            line := n
+          end
+      | x -> printf "$\n" [fInst x] in
+
+  (* Report failure of sanity checks *)
+  let insane fmt args =
+    fprintf stderr "WARNING: Code failed sanity checks -- $\n" [fMeta fmt args];
+    printf "! *** HERE!\n" [];
+    raise Exit in
+
+  (* Map labels to (depth, flag) pairs *)
+  let labdict = Hashtbl.create 50 in
+
+  (* Note the depth at a label and check for consistency *)
+  let note_label lab def d =
+    try
+      let (d1, f) = Hashtbl.find labdict lab in
+      if d >= 0 && d <> d1 then
+        insane "inconsistent stack depth ($ <> $) at label $"
+          [fNum d; fNum d1; fNum lab];
+      if def then begin
+        if !f then insane "multiply defined label $" [fNum lab];
+        f := true
+      end;
+      d1
+    with Not_found ->
+      (* If this point is after an unconditional jump (d < 0) and
+         the label is not defined previously, assume depth 0 *)
+      let d1 = max d 0 in
+      Hashtbl.add labdict lab (d1, ref def);
+      d1 in
+
+  (* Check all mentioned labels have been defined *)
+  let check_labs () =
+    Hashtbl.iter (fun lab (d, f) ->
+      if not !f then insane "label $ is not defined" [fNum lab]) labdict in
+
+  let tail = ref [] in
+
+  let output () = out (List.hd !tail); tail := List.tl !tail in
+
+  (* Scan an instruction sequence, keeping track of the stack depth *)
+  let rec scan d =
+    match !tail with
+        [] ->
+          if d <> 0 then insane "stack not empty at end" []
+      | x :: _ ->
+          let need a =
+            if d < a then
+              insane "stack underflow at instruction $" [fInst x] in
+          output ();
+          begin match x with
+              LABEL lab ->
+                scan (note_label lab true d)
+            | JUMP lab ->
+                unreachable (note_label lab false d)
+            | JUMPC (_, lab) ->
+                need 2; scan (note_label lab false (d-2))
+            | CASEARM (_, _) ->
+                insane "unexpected CASEARM" []
+            | CASEJUMP n ->
+                need 1; jumptab n (d-1)
+            | SEQ _ | NOP ->
+                failwith "sanity2"
+            | _ ->
+                let (a, b) = delta x in need a; scan (d-a+b)
+          end
+
+  (* Scan a jump table, checking for the correct number of entries *)
+  and jumptab n d =
+    match !tail with
+        CASEARM (_, lab) :: _ ->
+          output ();
+          if n = 0 then
+            insane "too many CASEARMs after CASEJUMP" [];
+          jumptab (n-1) (note_label lab false d)
+      | _ ->
+          if n > 0 then
+            insane "too few CASEARMs after CASEJUMP" [];
+          scan d
+
+  (* Scan code after an unconditional jump *)
+  and unreachable d =
+    match !tail with
+        [] -> ()
+      | LABEL lab :: _ ->
+          output ();
+          scan (note_label lab true (-1))
+      | _ ->
+          (* Genuinely unreachable code -- assume stack is empty *)
+          scan 0 in
+
+  match canon code with
+      SEQ xs ->
+        tail := xs;
+        (try scan 0; check_labs () with Exit ->
+          (* After error, output rest of code without checks *)
+          List.iter out !tail; exit 1)
+    | _ -> failwith "sanity"
+
+(* |just_output| -- output code sequence *)
+(*
+let just_output code =
   let line = ref 0 in
   let rec out =
-    function 
+    function
         SEQ xs -> List.iter out xs
       | NOP -> ()
-      | LINE n -> 
+      | LINE n ->
           if n <> 0 && !line <> n then begin
             printf "! $\n" [fStr (Source.get_line n)];
             line := n
           end
       | x -> printf "$\n" [fInst x] in
   out code
+*)
+
+let output code =
+  try check_and_output code with Exit -> exit 1

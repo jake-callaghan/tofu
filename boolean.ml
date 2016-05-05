@@ -1,5 +1,5 @@
 (* tofu/boolean.ml *)
-(* this module contains everything to implement the Boolean tofu library class *)
+(* this module contains the semantic interface of the Boolean tofu library class *)
 
 open Tree
 open Object
@@ -29,8 +29,8 @@ let not_desc = {
 	method_name = "not";
 	defining_class = None;
 	return_type = "Boolean";
-	number_of_formals = 1;
-	formals = [Formal ("that","Boolean")];
+	number_of_formals = 0;
+	formals = [];
 	vtable_index = 1;
 	locals = [];
 	body = Skip;

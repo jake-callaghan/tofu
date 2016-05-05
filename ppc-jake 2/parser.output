@@ -1,0 +1,2291 @@
+   0  $accept : %entry% $end
+
+   1  program : block DOT
+
+   2  block : decl_list BEGIN stmts END
+
+   3  decl_list :
+   4            | decl decl_list
+
+   5  decl : CONST const_decls
+   6       | VAR var_decls
+   7       | proc_decl
+   8       | TYPE type_decls
+
+   9  const_decls : const_decl
+  10              | const_decl const_decls
+
+  11  const_decl : IDENT EQUAL expr SEMI
+
+  12  type_decls : type_decl
+  13             | type_decl type_decls
+
+  14  type_decl : IDENT EQUAL typexpr SEMI
+
+  15  var_decls : var_decl
+  16            | var_decl var_decls
+
+  17  var_decl : ident_list COLON typexpr SEMI
+
+  18  proc_decl : proc_heading SEMI block SEMI
+
+  19  proc_heading : PROC name params return_type
+
+  20  params : LPAR RPAR
+  21         | LPAR formal_decls RPAR
+
+  22  formal_decls : formal_decl
+  23               | formal_decl SEMI formal_decls
+
+  24  formal_decl : ident_list COLON typexpr
+  25              | VAR ident_list COLON typexpr
+  26              | proc_heading
+
+  27  return_type :
+  28              | COLON typexpr
+
+  29  stmts : stmt_list
+
+  30  stmt_list : stmt
+  31            | stmt SEMI stmt_list
+
+  32  stmt : line stmt1
+  33       | IMPOSSIBLE
+
+  34  line :
+
+  35  stmt1 :
+  36        | variable ASSIGN expr
+  37        | name actuals
+  38        | RETURN expr_opt
+  39        | IF expr THEN stmts elses END
+  40        | WHILE expr DO stmts END
+  41        | REPEAT stmts UNTIL expr
+  42        | FOR name ASSIGN expr TO expr DO stmts END
+  43        | CASE expr OF arms else_part END
+
+  44  elses :
+  45        | ELSE stmts
+  46        | ELSIF line expr THEN stmts elses
+
+  47  arms : arm
+  48       | arm VBAR arms
+
+  49  arm : expr COLON stmts
+
+  50  else_part :
+  51            | ELSE stmts
+
+  52  ident_list : IDENT
+  53             | IDENT COMMA ident_list
+
+  54  expr_opt :
+  55           | expr
+
+  56  expr : variable
+  57       | NUMBER
+  58       | STRING
+  59       | CHAR
+  60       | NIL
+  61       | name actuals
+  62       | NOT expr
+  63       | MINUS expr
+  64       | expr MULOP expr
+  65       | expr ADDOP expr
+  66       | expr MINUS expr
+  67       | expr RELOP expr
+  68       | expr EQUAL expr
+  69       | LPAR expr RPAR
+
+  70  actuals : LPAR RPAR
+  71          | LPAR expr_list RPAR
+
+  72  expr_list : expr
+  73            | expr COMMA expr_list
+
+  74  variable : name
+  75           | variable SUB expr BUS
+  76           | variable DOT name
+  77           | variable ARROW
+
+  78  typexpr : name
+  79          | ARRAY expr OF typexpr
+  80          | RECORD fields END
+  81          | POINTER TO typexpr
+
+  82  fields : field_decl opt_semi
+  83         | field_decl SEMI fields
+
+  84  field_decl : ident_list COLON typexpr
+
+  85  opt_semi : SEMI
+  86           |
+
+  87  name : IDENT
+
+  88  %entry% : '\001' program
+
+state 0
+	$accept : . %entry% $end  (0)
+
+	'\001'  shift 1
+	.  error
+
+	%entry%  goto 2
+
+
+state 1
+	%entry% : '\001' . program  (88)
+	decl_list : .  (3)
+
+	CONST  shift 3
+	PROC  shift 4
+	TYPE  shift 5
+	VAR  shift 6
+	BEGIN  reduce 3
+
+	program  goto 7
+	block  goto 8
+	decl_list  goto 9
+	decl  goto 10
+	proc_decl  goto 11
+	proc_heading  goto 12
+
+
+state 2
+	$accept : %entry% . $end  (0)
+
+	$end  accept
+
+
+state 3
+	decl : CONST . const_decls  (5)
+
+	IDENT  shift 13
+	.  error
+
+	const_decls  goto 14
+	const_decl  goto 15
+
+
+state 4
+	proc_heading : PROC . name params return_type  (19)
+
+	IDENT  shift 16
+	.  error
+
+	name  goto 17
+
+
+state 5
+	decl : TYPE . type_decls  (8)
+
+	IDENT  shift 18
+	.  error
+
+	type_decls  goto 19
+	type_decl  goto 20
+
+
+state 6
+	decl : VAR . var_decls  (6)
+
+	IDENT  shift 21
+	.  error
+
+	var_decls  goto 22
+	var_decl  goto 23
+	ident_list  goto 24
+
+
+state 7
+	%entry% : '\001' program .  (88)
+
+	.  reduce 88
+
+
+state 8
+	program : block . DOT  (1)
+
+	DOT  shift 25
+	.  error
+
+
+state 9
+	block : decl_list . BEGIN stmts END  (2)
+
+	BEGIN  shift 26
+	.  error
+
+
+state 10
+	decl_list : decl . decl_list  (4)
+	decl_list : .  (3)
+
+	CONST  shift 3
+	PROC  shift 4
+	TYPE  shift 5
+	VAR  shift 6
+	BEGIN  reduce 3
+
+	decl_list  goto 27
+	decl  goto 10
+	proc_decl  goto 11
+	proc_heading  goto 12
+
+
+state 11
+	decl : proc_decl .  (7)
+
+	.  reduce 7
+
+
+state 12
+	proc_decl : proc_heading . SEMI block SEMI  (18)
+
+	SEMI  shift 28
+	.  error
+
+
+state 13
+	const_decl : IDENT . EQUAL expr SEMI  (11)
+
+	EQUAL  shift 29
+	.  error
+
+
+state 14
+	decl : CONST const_decls .  (5)
+
+	.  reduce 5
+
+
+state 15
+	const_decls : const_decl .  (9)
+	const_decls : const_decl . const_decls  (10)
+
+	IDENT  shift 13
+	BEGIN  reduce 9
+	CONST  reduce 9
+	PROC  reduce 9
+	TYPE  reduce 9
+	VAR  reduce 9
+
+	const_decls  goto 30
+	const_decl  goto 15
+
+
+state 16
+	name : IDENT .  (87)
+
+	.  reduce 87
+
+
+state 17
+	proc_heading : PROC name . params return_type  (19)
+
+	LPAR  shift 31
+	.  error
+
+	params  goto 32
+
+
+state 18
+	type_decl : IDENT . EQUAL typexpr SEMI  (14)
+
+	EQUAL  shift 33
+	.  error
+
+
+state 19
+	decl : TYPE type_decls .  (8)
+
+	.  reduce 8
+
+
+state 20
+	type_decls : type_decl .  (12)
+	type_decls : type_decl . type_decls  (13)
+
+	IDENT  shift 18
+	BEGIN  reduce 12
+	CONST  reduce 12
+	PROC  reduce 12
+	TYPE  reduce 12
+	VAR  reduce 12
+
+	type_decls  goto 34
+	type_decl  goto 20
+
+
+state 21
+	ident_list : IDENT .  (52)
+	ident_list : IDENT . COMMA ident_list  (53)
+
+	COMMA  shift 35
+	COLON  reduce 52
+
+
+state 22
+	decl : VAR var_decls .  (6)
+
+	.  reduce 6
+
+
+state 23
+	var_decls : var_decl .  (15)
+	var_decls : var_decl . var_decls  (16)
+
+	IDENT  shift 21
+	BEGIN  reduce 15
+	CONST  reduce 15
+	PROC  reduce 15
+	TYPE  reduce 15
+	VAR  reduce 15
+
+	var_decls  goto 36
+	var_decl  goto 23
+	ident_list  goto 24
+
+
+state 24
+	var_decl : ident_list . COLON typexpr SEMI  (17)
+
+	COLON  shift 37
+	.  error
+
+
+state 25
+	program : block DOT .  (1)
+
+	.  reduce 1
+
+
+state 26
+	block : decl_list BEGIN . stmts END  (2)
+	line : .  (34)
+
+	IMPOSSIBLE  shift 38
+	IDENT  reduce 34
+	SEMI  reduce 34
+	END  reduce 34
+	IF  reduce 34
+	RETURN  reduce 34
+	WHILE  reduce 34
+	REPEAT  reduce 34
+	FOR  reduce 34
+	CASE  reduce 34
+
+	stmts  goto 39
+	stmt_list  goto 40
+	stmt  goto 41
+	line  goto 42
+
+
+state 27
+	decl_list : decl decl_list .  (4)
+
+	.  reduce 4
+
+
+state 28
+	proc_decl : proc_heading SEMI . block SEMI  (18)
+	decl_list : .  (3)
+
+	CONST  shift 3
+	PROC  shift 4
+	TYPE  shift 5
+	VAR  shift 6
+	BEGIN  reduce 3
+
+	block  goto 43
+	decl_list  goto 9
+	decl  goto 10
+	proc_decl  goto 11
+	proc_heading  goto 12
+
+
+state 29
+	const_decl : IDENT EQUAL . expr SEMI  (11)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 51
+	name  goto 52
+	variable  goto 53
+
+
+state 30
+	const_decls : const_decl const_decls .  (10)
+
+	.  reduce 10
+
+
+state 31
+	params : LPAR . RPAR  (20)
+	params : LPAR . formal_decls RPAR  (21)
+
+	IDENT  shift 21
+	RPAR  shift 54
+	PROC  shift 4
+	VAR  shift 55
+	.  error
+
+	ident_list  goto 56
+	proc_heading  goto 57
+	formal_decls  goto 58
+	formal_decl  goto 59
+
+
+state 32
+	proc_heading : PROC name params . return_type  (19)
+	return_type : .  (27)
+
+	COLON  shift 60
+	SEMI  reduce 27
+	RPAR  reduce 27
+
+	return_type  goto 61
+
+
+state 33
+	type_decl : IDENT EQUAL . typexpr SEMI  (14)
+
+	IDENT  shift 16
+	ARRAY  shift 62
+	RECORD  shift 63
+	POINTER  shift 64
+	.  error
+
+	typexpr  goto 65
+	name  goto 66
+
+
+state 34
+	type_decls : type_decl type_decls .  (13)
+
+	.  reduce 13
+
+
+state 35
+	ident_list : IDENT COMMA . ident_list  (53)
+
+	IDENT  shift 21
+	.  error
+
+	ident_list  goto 67
+
+
+state 36
+	var_decls : var_decl var_decls .  (16)
+
+	.  reduce 16
+
+
+state 37
+	var_decl : ident_list COLON . typexpr SEMI  (17)
+
+	IDENT  shift 16
+	ARRAY  shift 62
+	RECORD  shift 63
+	POINTER  shift 64
+	.  error
+
+	typexpr  goto 68
+	name  goto 66
+
+
+state 38
+	stmt : IMPOSSIBLE .  (33)
+
+	.  reduce 33
+
+
+state 39
+	block : decl_list BEGIN stmts . END  (2)
+
+	END  shift 69
+	.  error
+
+
+state 40
+	stmts : stmt_list .  (29)
+
+	.  reduce 29
+
+
+state 41
+	stmt_list : stmt .  (30)
+	stmt_list : stmt . SEMI stmt_list  (31)
+
+	SEMI  shift 70
+	VBAR  reduce 30
+	ELSE  reduce 30
+	END  reduce 30
+	UNTIL  reduce 30
+	ELSIF  reduce 30
+
+
+state 42
+	stmt : line . stmt1  (32)
+	stmt1 : .  (35)
+
+	IDENT  shift 16
+	IF  shift 71
+	RETURN  shift 72
+	WHILE  shift 73
+	REPEAT  shift 74
+	FOR  shift 75
+	CASE  shift 76
+	SEMI  reduce 35
+	VBAR  reduce 35
+	ELSE  reduce 35
+	END  reduce 35
+	UNTIL  reduce 35
+	ELSIF  reduce 35
+
+	name  goto 77
+	stmt1  goto 78
+	variable  goto 79
+
+
+state 43
+	proc_decl : proc_heading SEMI block . SEMI  (18)
+
+	SEMI  shift 80
+	.  error
+
+
+state 44
+	expr : NUMBER .  (57)
+
+	.  reduce 57
+
+
+state 45
+	expr : CHAR .  (59)
+
+	.  reduce 59
+
+
+state 46
+	expr : STRING .  (58)
+
+	.  reduce 58
+
+
+state 47
+	expr : LPAR . expr RPAR  (69)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 81
+	name  goto 52
+	variable  goto 53
+
+
+state 48
+	expr : MINUS . expr  (63)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 82
+	name  goto 52
+	variable  goto 53
+
+
+state 49
+	expr : NOT . expr  (62)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 83
+	name  goto 52
+	variable  goto 53
+
+
+state 50
+	expr : NIL .  (60)
+
+	.  reduce 60
+
+
+state 51
+	const_decl : IDENT EQUAL expr . SEMI  (11)
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	SEMI  shift 87
+	EQUAL  shift 88
+	MINUS  shift 89
+	.  error
+
+
+state 52
+	expr : name . actuals  (61)
+	variable : name .  (74)
+
+	LPAR  shift 90
+	MULOP  reduce 74
+	ADDOP  reduce 74
+	RELOP  reduce 74
+	SEMI  reduce 74
+	DOT  reduce 74
+	COLON  reduce 74
+	RPAR  reduce 74
+	COMMA  reduce 74
+	SUB  reduce 74
+	BUS  reduce 74
+	EQUAL  reduce 74
+	MINUS  reduce 74
+	VBAR  reduce 74
+	ARROW  reduce 74
+	DO  reduce 74
+	ELSE  reduce 74
+	END  reduce 74
+	OF  reduce 74
+	THEN  reduce 74
+	TO  reduce 74
+	UNTIL  reduce 74
+	ELSIF  reduce 74
+
+	actuals  goto 91
+
+
+state 53
+	expr : variable .  (56)
+	variable : variable . SUB expr BUS  (75)
+	variable : variable . DOT name  (76)
+	variable : variable . ARROW  (77)
+
+	DOT  shift 92
+	SUB  shift 93
+	ARROW  shift 94
+	MULOP  reduce 56
+	ADDOP  reduce 56
+	RELOP  reduce 56
+	SEMI  reduce 56
+	COLON  reduce 56
+	RPAR  reduce 56
+	COMMA  reduce 56
+	BUS  reduce 56
+	EQUAL  reduce 56
+	MINUS  reduce 56
+	VBAR  reduce 56
+	DO  reduce 56
+	ELSE  reduce 56
+	END  reduce 56
+	OF  reduce 56
+	THEN  reduce 56
+	TO  reduce 56
+	UNTIL  reduce 56
+	ELSIF  reduce 56
+
+
+state 54
+	params : LPAR RPAR .  (20)
+
+	.  reduce 20
+
+
+state 55
+	formal_decl : VAR . ident_list COLON typexpr  (25)
+
+	IDENT  shift 21
+	.  error
+
+	ident_list  goto 95
+
+
+state 56
+	formal_decl : ident_list . COLON typexpr  (24)
+
+	COLON  shift 96
+	.  error
+
+
+state 57
+	formal_decl : proc_heading .  (26)
+
+	.  reduce 26
+
+
+state 58
+	params : LPAR formal_decls . RPAR  (21)
+
+	RPAR  shift 97
+	.  error
+
+
+state 59
+	formal_decls : formal_decl .  (22)
+	formal_decls : formal_decl . SEMI formal_decls  (23)
+
+	SEMI  shift 98
+	RPAR  reduce 22
+
+
+state 60
+	return_type : COLON . typexpr  (28)
+
+	IDENT  shift 16
+	ARRAY  shift 62
+	RECORD  shift 63
+	POINTER  shift 64
+	.  error
+
+	typexpr  goto 99
+	name  goto 66
+
+
+state 61
+	proc_heading : PROC name params return_type .  (19)
+
+	.  reduce 19
+
+
+state 62
+	typexpr : ARRAY . expr OF typexpr  (79)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 100
+	name  goto 52
+	variable  goto 53
+
+
+state 63
+	typexpr : RECORD . fields END  (80)
+
+	IDENT  shift 21
+	.  error
+
+	ident_list  goto 101
+	fields  goto 102
+	field_decl  goto 103
+
+
+state 64
+	typexpr : POINTER . TO typexpr  (81)
+
+	TO  shift 104
+	.  error
+
+
+state 65
+	type_decl : IDENT EQUAL typexpr . SEMI  (14)
+
+	SEMI  shift 105
+	.  error
+
+
+state 66
+	typexpr : name .  (78)
+
+	.  reduce 78
+
+
+state 67
+	ident_list : IDENT COMMA ident_list .  (53)
+
+	.  reduce 53
+
+
+state 68
+	var_decl : ident_list COLON typexpr . SEMI  (17)
+
+	SEMI  shift 106
+	.  error
+
+
+state 69
+	block : decl_list BEGIN stmts END .  (2)
+
+	.  reduce 2
+
+
+state 70
+	stmt_list : stmt SEMI . stmt_list  (31)
+	line : .  (34)
+
+	IMPOSSIBLE  shift 38
+	IDENT  reduce 34
+	SEMI  reduce 34
+	VBAR  reduce 34
+	ELSE  reduce 34
+	END  reduce 34
+	IF  reduce 34
+	RETURN  reduce 34
+	WHILE  reduce 34
+	REPEAT  reduce 34
+	UNTIL  reduce 34
+	FOR  reduce 34
+	ELSIF  reduce 34
+	CASE  reduce 34
+
+	stmt_list  goto 107
+	stmt  goto 41
+	line  goto 42
+
+
+state 71
+	stmt1 : IF . expr THEN stmts elses END  (39)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 108
+	name  goto 52
+	variable  goto 53
+
+
+state 72
+	stmt1 : RETURN . expr_opt  (38)
+	expr_opt : .  (54)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	SEMI  reduce 54
+	VBAR  reduce 54
+	ELSE  reduce 54
+	END  reduce 54
+	UNTIL  reduce 54
+	ELSIF  reduce 54
+
+	expr  goto 109
+	name  goto 52
+	variable  goto 53
+	expr_opt  goto 110
+
+
+state 73
+	stmt1 : WHILE . expr DO stmts END  (40)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 111
+	name  goto 52
+	variable  goto 53
+
+
+state 74
+	stmt1 : REPEAT . stmts UNTIL expr  (41)
+	line : .  (34)
+
+	IMPOSSIBLE  shift 38
+	IDENT  reduce 34
+	SEMI  reduce 34
+	IF  reduce 34
+	RETURN  reduce 34
+	WHILE  reduce 34
+	REPEAT  reduce 34
+	UNTIL  reduce 34
+	FOR  reduce 34
+	CASE  reduce 34
+
+	stmts  goto 112
+	stmt_list  goto 40
+	stmt  goto 41
+	line  goto 42
+
+
+state 75
+	stmt1 : FOR . name ASSIGN expr TO expr DO stmts END  (42)
+
+	IDENT  shift 16
+	.  error
+
+	name  goto 113
+
+
+state 76
+	stmt1 : CASE . expr OF arms else_part END  (43)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 114
+	name  goto 52
+	variable  goto 53
+
+
+state 77
+	stmt1 : name . actuals  (37)
+	variable : name .  (74)
+
+	LPAR  shift 90
+	DOT  reduce 74
+	SUB  reduce 74
+	ASSIGN  reduce 74
+	ARROW  reduce 74
+
+	actuals  goto 115
+
+
+state 78
+	stmt : line stmt1 .  (32)
+
+	.  reduce 32
+
+
+state 79
+	stmt1 : variable . ASSIGN expr  (36)
+	variable : variable . SUB expr BUS  (75)
+	variable : variable . DOT name  (76)
+	variable : variable . ARROW  (77)
+
+	DOT  shift 92
+	SUB  shift 93
+	ASSIGN  shift 116
+	ARROW  shift 94
+	.  error
+
+
+state 80
+	proc_decl : proc_heading SEMI block SEMI .  (18)
+
+	.  reduce 18
+
+
+state 81
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+	expr : LPAR expr . RPAR  (69)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	RPAR  shift 117
+	EQUAL  shift 88
+	MINUS  shift 89
+	.  error
+
+
+state 82
+	expr : MINUS expr .  (63)
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	.  reduce 63
+
+
+state 83
+	expr : NOT expr .  (62)
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	.  reduce 62
+
+
+state 84
+	expr : expr MULOP . expr  (64)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 118
+	name  goto 52
+	variable  goto 53
+
+
+state 85
+	expr : expr ADDOP . expr  (65)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 119
+	name  goto 52
+	variable  goto 53
+
+
+state 86
+	expr : expr RELOP . expr  (67)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 120
+	name  goto 52
+	variable  goto 53
+
+
+state 87
+	const_decl : IDENT EQUAL expr SEMI .  (11)
+
+	.  reduce 11
+
+
+state 88
+	expr : expr EQUAL . expr  (68)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 121
+	name  goto 52
+	variable  goto 53
+
+
+state 89
+	expr : expr MINUS . expr  (66)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 122
+	name  goto 52
+	variable  goto 53
+
+
+state 90
+	actuals : LPAR . RPAR  (70)
+	actuals : LPAR . expr_list RPAR  (71)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	RPAR  shift 123
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 124
+	name  goto 52
+	variable  goto 53
+	expr_list  goto 125
+
+
+state 91
+	expr : name actuals .  (61)
+
+	.  reduce 61
+
+
+state 92
+	variable : variable DOT . name  (76)
+
+	IDENT  shift 16
+	.  error
+
+	name  goto 126
+
+
+state 93
+	variable : variable SUB . expr BUS  (75)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 127
+	name  goto 52
+	variable  goto 53
+
+
+state 94
+	variable : variable ARROW .  (77)
+
+	.  reduce 77
+
+
+state 95
+	formal_decl : VAR ident_list . COLON typexpr  (25)
+
+	COLON  shift 128
+	.  error
+
+
+state 96
+	formal_decl : ident_list COLON . typexpr  (24)
+
+	IDENT  shift 16
+	ARRAY  shift 62
+	RECORD  shift 63
+	POINTER  shift 64
+	.  error
+
+	typexpr  goto 129
+	name  goto 66
+
+
+state 97
+	params : LPAR formal_decls RPAR .  (21)
+
+	.  reduce 21
+
+
+state 98
+	formal_decls : formal_decl SEMI . formal_decls  (23)
+
+	IDENT  shift 21
+	PROC  shift 4
+	VAR  shift 55
+	.  error
+
+	ident_list  goto 56
+	proc_heading  goto 57
+	formal_decls  goto 130
+	formal_decl  goto 59
+
+
+state 99
+	return_type : COLON typexpr .  (28)
+
+	.  reduce 28
+
+
+state 100
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+	typexpr : ARRAY expr . OF typexpr  (79)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	EQUAL  shift 88
+	MINUS  shift 89
+	OF  shift 131
+	.  error
+
+
+state 101
+	field_decl : ident_list . COLON typexpr  (84)
+
+	COLON  shift 132
+	.  error
+
+
+state 102
+	typexpr : RECORD fields . END  (80)
+
+	END  shift 133
+	.  error
+
+
+state 103
+	fields : field_decl . opt_semi  (82)
+	fields : field_decl . SEMI fields  (83)
+	opt_semi : .  (86)
+
+	SEMI  shift 134
+	END  reduce 86
+
+	opt_semi  goto 135
+
+
+state 104
+	typexpr : POINTER TO . typexpr  (81)
+
+	IDENT  shift 16
+	ARRAY  shift 62
+	RECORD  shift 63
+	POINTER  shift 64
+	.  error
+
+	typexpr  goto 136
+	name  goto 66
+
+
+state 105
+	type_decl : IDENT EQUAL typexpr SEMI .  (14)
+
+	.  reduce 14
+
+
+state 106
+	var_decl : ident_list COLON typexpr SEMI .  (17)
+
+	.  reduce 17
+
+
+state 107
+	stmt_list : stmt SEMI stmt_list .  (31)
+
+	.  reduce 31
+
+
+state 108
+	stmt1 : IF expr . THEN stmts elses END  (39)
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	EQUAL  shift 88
+	MINUS  shift 89
+	THEN  shift 137
+	.  error
+
+
+state 109
+	expr_opt : expr .  (55)
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	EQUAL  shift 88
+	MINUS  shift 89
+	SEMI  reduce 55
+	VBAR  reduce 55
+	ELSE  reduce 55
+	END  reduce 55
+	UNTIL  reduce 55
+	ELSIF  reduce 55
+
+
+state 110
+	stmt1 : RETURN expr_opt .  (38)
+
+	.  reduce 38
+
+
+state 111
+	stmt1 : WHILE expr . DO stmts END  (40)
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	EQUAL  shift 88
+	MINUS  shift 89
+	DO  shift 138
+	.  error
+
+
+state 112
+	stmt1 : REPEAT stmts . UNTIL expr  (41)
+
+	UNTIL  shift 139
+	.  error
+
+
+state 113
+	stmt1 : FOR name . ASSIGN expr TO expr DO stmts END  (42)
+
+	ASSIGN  shift 140
+	.  error
+
+
+state 114
+	stmt1 : CASE expr . OF arms else_part END  (43)
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	EQUAL  shift 88
+	MINUS  shift 89
+	OF  shift 141
+	.  error
+
+
+state 115
+	stmt1 : name actuals .  (37)
+
+	.  reduce 37
+
+
+state 116
+	stmt1 : variable ASSIGN . expr  (36)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 142
+	name  goto 52
+	variable  goto 53
+
+
+state 117
+	expr : LPAR expr RPAR .  (69)
+
+	.  reduce 69
+
+
+state 118
+	expr : expr . MULOP expr  (64)
+	expr : expr MULOP expr .  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	.  reduce 64
+
+
+state 119
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr ADDOP expr .  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	MULOP  shift 84
+	ADDOP  reduce 65
+	RELOP  reduce 65
+	SEMI  reduce 65
+	COLON  reduce 65
+	RPAR  reduce 65
+	COMMA  reduce 65
+	BUS  reduce 65
+	EQUAL  reduce 65
+	MINUS  reduce 65
+	VBAR  reduce 65
+	DO  reduce 65
+	ELSE  reduce 65
+	END  reduce 65
+	OF  reduce 65
+	THEN  reduce 65
+	TO  reduce 65
+	UNTIL  reduce 65
+	ELSIF  reduce 65
+
+
+state 120
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr RELOP expr .  (67)
+	expr : expr . EQUAL expr  (68)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	MINUS  shift 89
+	RELOP  reduce 67
+	SEMI  reduce 67
+	COLON  reduce 67
+	RPAR  reduce 67
+	COMMA  reduce 67
+	BUS  reduce 67
+	EQUAL  reduce 67
+	VBAR  reduce 67
+	DO  reduce 67
+	ELSE  reduce 67
+	END  reduce 67
+	OF  reduce 67
+	THEN  reduce 67
+	TO  reduce 67
+	UNTIL  reduce 67
+	ELSIF  reduce 67
+
+
+state 121
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+	expr : expr EQUAL expr .  (68)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	MINUS  shift 89
+	RELOP  reduce 68
+	SEMI  reduce 68
+	COLON  reduce 68
+	RPAR  reduce 68
+	COMMA  reduce 68
+	BUS  reduce 68
+	EQUAL  reduce 68
+	VBAR  reduce 68
+	DO  reduce 68
+	ELSE  reduce 68
+	END  reduce 68
+	OF  reduce 68
+	THEN  reduce 68
+	TO  reduce 68
+	UNTIL  reduce 68
+	ELSIF  reduce 68
+
+
+state 122
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr MINUS expr .  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	MULOP  shift 84
+	ADDOP  reduce 66
+	RELOP  reduce 66
+	SEMI  reduce 66
+	COLON  reduce 66
+	RPAR  reduce 66
+	COMMA  reduce 66
+	BUS  reduce 66
+	EQUAL  reduce 66
+	MINUS  reduce 66
+	VBAR  reduce 66
+	DO  reduce 66
+	ELSE  reduce 66
+	END  reduce 66
+	OF  reduce 66
+	THEN  reduce 66
+	TO  reduce 66
+	UNTIL  reduce 66
+	ELSIF  reduce 66
+
+
+state 123
+	actuals : LPAR RPAR .  (70)
+
+	.  reduce 70
+
+
+state 124
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+	expr_list : expr .  (72)
+	expr_list : expr . COMMA expr_list  (73)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	COMMA  shift 143
+	EQUAL  shift 88
+	MINUS  shift 89
+	RPAR  reduce 72
+
+
+state 125
+	actuals : LPAR expr_list . RPAR  (71)
+
+	RPAR  shift 144
+	.  error
+
+
+state 126
+	variable : variable DOT name .  (76)
+
+	.  reduce 76
+
+
+state 127
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+	variable : variable SUB expr . BUS  (75)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	BUS  shift 145
+	EQUAL  shift 88
+	MINUS  shift 89
+	.  error
+
+
+state 128
+	formal_decl : VAR ident_list COLON . typexpr  (25)
+
+	IDENT  shift 16
+	ARRAY  shift 62
+	RECORD  shift 63
+	POINTER  shift 64
+	.  error
+
+	typexpr  goto 146
+	name  goto 66
+
+
+state 129
+	formal_decl : ident_list COLON typexpr .  (24)
+
+	.  reduce 24
+
+
+state 130
+	formal_decls : formal_decl SEMI formal_decls .  (23)
+
+	.  reduce 23
+
+
+state 131
+	typexpr : ARRAY expr OF . typexpr  (79)
+
+	IDENT  shift 16
+	ARRAY  shift 62
+	RECORD  shift 63
+	POINTER  shift 64
+	.  error
+
+	typexpr  goto 147
+	name  goto 66
+
+
+state 132
+	field_decl : ident_list COLON . typexpr  (84)
+
+	IDENT  shift 16
+	ARRAY  shift 62
+	RECORD  shift 63
+	POINTER  shift 64
+	.  error
+
+	typexpr  goto 148
+	name  goto 66
+
+
+state 133
+	typexpr : RECORD fields END .  (80)
+
+	.  reduce 80
+
+
+state 134
+	fields : field_decl SEMI . fields  (83)
+	opt_semi : SEMI .  (85)
+
+	IDENT  shift 21
+	END  reduce 85
+
+	ident_list  goto 101
+	fields  goto 149
+	field_decl  goto 103
+
+
+state 135
+	fields : field_decl opt_semi .  (82)
+
+	.  reduce 82
+
+
+state 136
+	typexpr : POINTER TO typexpr .  (81)
+
+	.  reduce 81
+
+
+state 137
+	stmt1 : IF expr THEN . stmts elses END  (39)
+	line : .  (34)
+
+	IMPOSSIBLE  shift 38
+	IDENT  reduce 34
+	SEMI  reduce 34
+	ELSE  reduce 34
+	END  reduce 34
+	IF  reduce 34
+	RETURN  reduce 34
+	WHILE  reduce 34
+	REPEAT  reduce 34
+	FOR  reduce 34
+	ELSIF  reduce 34
+	CASE  reduce 34
+
+	stmts  goto 150
+	stmt_list  goto 40
+	stmt  goto 41
+	line  goto 42
+
+
+state 138
+	stmt1 : WHILE expr DO . stmts END  (40)
+	line : .  (34)
+
+	IMPOSSIBLE  shift 38
+	IDENT  reduce 34
+	SEMI  reduce 34
+	END  reduce 34
+	IF  reduce 34
+	RETURN  reduce 34
+	WHILE  reduce 34
+	REPEAT  reduce 34
+	FOR  reduce 34
+	CASE  reduce 34
+
+	stmts  goto 151
+	stmt_list  goto 40
+	stmt  goto 41
+	line  goto 42
+
+
+state 139
+	stmt1 : REPEAT stmts UNTIL . expr  (41)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 152
+	name  goto 52
+	variable  goto 53
+
+
+state 140
+	stmt1 : FOR name ASSIGN . expr TO expr DO stmts END  (42)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 153
+	name  goto 52
+	variable  goto 53
+
+
+state 141
+	stmt1 : CASE expr OF . arms else_part END  (43)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 154
+	name  goto 52
+	variable  goto 53
+	arms  goto 155
+	arm  goto 156
+
+
+state 142
+	stmt1 : variable ASSIGN expr .  (36)
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	EQUAL  shift 88
+	MINUS  shift 89
+	SEMI  reduce 36
+	VBAR  reduce 36
+	ELSE  reduce 36
+	END  reduce 36
+	UNTIL  reduce 36
+	ELSIF  reduce 36
+
+
+state 143
+	expr_list : expr COMMA . expr_list  (73)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 124
+	name  goto 52
+	variable  goto 53
+	expr_list  goto 157
+
+
+state 144
+	actuals : LPAR expr_list RPAR .  (71)
+
+	.  reduce 71
+
+
+state 145
+	variable : variable SUB expr BUS .  (75)
+
+	.  reduce 75
+
+
+state 146
+	formal_decl : VAR ident_list COLON typexpr .  (25)
+
+	.  reduce 25
+
+
+state 147
+	typexpr : ARRAY expr OF typexpr .  (79)
+
+	.  reduce 79
+
+
+state 148
+	field_decl : ident_list COLON typexpr .  (84)
+
+	.  reduce 84
+
+
+state 149
+	fields : field_decl SEMI fields .  (83)
+
+	.  reduce 83
+
+
+state 150
+	stmt1 : IF expr THEN stmts . elses END  (39)
+	elses : .  (44)
+
+	ELSE  shift 158
+	ELSIF  shift 159
+	END  reduce 44
+
+	elses  goto 160
+
+
+state 151
+	stmt1 : WHILE expr DO stmts . END  (40)
+
+	END  shift 161
+	.  error
+
+
+state 152
+	stmt1 : REPEAT stmts UNTIL expr .  (41)
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	EQUAL  shift 88
+	MINUS  shift 89
+	SEMI  reduce 41
+	VBAR  reduce 41
+	ELSE  reduce 41
+	END  reduce 41
+	UNTIL  reduce 41
+	ELSIF  reduce 41
+
+
+state 153
+	stmt1 : FOR name ASSIGN expr . TO expr DO stmts END  (42)
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	EQUAL  shift 88
+	MINUS  shift 89
+	TO  shift 162
+	.  error
+
+
+state 154
+	arm : expr . COLON stmts  (49)
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	COLON  shift 163
+	EQUAL  shift 88
+	MINUS  shift 89
+	.  error
+
+
+state 155
+	stmt1 : CASE expr OF arms . else_part END  (43)
+	else_part : .  (50)
+
+	ELSE  shift 164
+	END  reduce 50
+
+	else_part  goto 165
+
+
+state 156
+	arms : arm .  (47)
+	arms : arm . VBAR arms  (48)
+
+	VBAR  shift 166
+	ELSE  reduce 47
+	END  reduce 47
+
+
+state 157
+	expr_list : expr COMMA expr_list .  (73)
+
+	.  reduce 73
+
+
+state 158
+	elses : ELSE . stmts  (45)
+	line : .  (34)
+
+	IMPOSSIBLE  shift 38
+	IDENT  reduce 34
+	SEMI  reduce 34
+	END  reduce 34
+	IF  reduce 34
+	RETURN  reduce 34
+	WHILE  reduce 34
+	REPEAT  reduce 34
+	FOR  reduce 34
+	CASE  reduce 34
+
+	stmts  goto 167
+	stmt_list  goto 40
+	stmt  goto 41
+	line  goto 42
+
+
+state 159
+	elses : ELSIF . line expr THEN stmts elses  (46)
+	line : .  (34)
+
+	.  reduce 34
+
+	line  goto 168
+
+
+state 160
+	stmt1 : IF expr THEN stmts elses . END  (39)
+
+	END  shift 169
+	.  error
+
+
+state 161
+	stmt1 : WHILE expr DO stmts END .  (40)
+
+	.  reduce 40
+
+
+state 162
+	stmt1 : FOR name ASSIGN expr TO . expr DO stmts END  (42)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 170
+	name  goto 52
+	variable  goto 53
+
+
+state 163
+	arm : expr COLON . stmts  (49)
+	line : .  (34)
+
+	IMPOSSIBLE  shift 38
+	IDENT  reduce 34
+	SEMI  reduce 34
+	VBAR  reduce 34
+	ELSE  reduce 34
+	END  reduce 34
+	IF  reduce 34
+	RETURN  reduce 34
+	WHILE  reduce 34
+	REPEAT  reduce 34
+	FOR  reduce 34
+	CASE  reduce 34
+
+	stmts  goto 171
+	stmt_list  goto 40
+	stmt  goto 41
+	line  goto 42
+
+
+state 164
+	else_part : ELSE . stmts  (51)
+	line : .  (34)
+
+	IMPOSSIBLE  shift 38
+	IDENT  reduce 34
+	SEMI  reduce 34
+	END  reduce 34
+	IF  reduce 34
+	RETURN  reduce 34
+	WHILE  reduce 34
+	REPEAT  reduce 34
+	FOR  reduce 34
+	CASE  reduce 34
+
+	stmts  goto 172
+	stmt_list  goto 40
+	stmt  goto 41
+	line  goto 42
+
+
+state 165
+	stmt1 : CASE expr OF arms else_part . END  (43)
+
+	END  shift 173
+	.  error
+
+
+state 166
+	arms : arm VBAR . arms  (48)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 154
+	name  goto 52
+	variable  goto 53
+	arms  goto 174
+	arm  goto 156
+
+
+state 167
+	elses : ELSE stmts .  (45)
+
+	.  reduce 45
+
+
+state 168
+	elses : ELSIF line . expr THEN stmts elses  (46)
+
+	IDENT  shift 16
+	NUMBER  shift 44
+	CHAR  shift 45
+	STRING  shift 46
+	LPAR  shift 47
+	MINUS  shift 48
+	NOT  shift 49
+	NIL  shift 50
+	.  error
+
+	expr  goto 175
+	name  goto 52
+	variable  goto 53
+
+
+state 169
+	stmt1 : IF expr THEN stmts elses END .  (39)
+
+	.  reduce 39
+
+
+state 170
+	stmt1 : FOR name ASSIGN expr TO expr . DO stmts END  (42)
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	EQUAL  shift 88
+	MINUS  shift 89
+	DO  shift 176
+	.  error
+
+
+state 171
+	arm : expr COLON stmts .  (49)
+
+	.  reduce 49
+
+
+state 172
+	else_part : ELSE stmts .  (51)
+
+	.  reduce 51
+
+
+state 173
+	stmt1 : CASE expr OF arms else_part END .  (43)
+
+	.  reduce 43
+
+
+state 174
+	arms : arm VBAR arms .  (48)
+
+	.  reduce 48
+
+
+state 175
+	elses : ELSIF line expr . THEN stmts elses  (46)
+	expr : expr . MULOP expr  (64)
+	expr : expr . ADDOP expr  (65)
+	expr : expr . MINUS expr  (66)
+	expr : expr . RELOP expr  (67)
+	expr : expr . EQUAL expr  (68)
+
+	MULOP  shift 84
+	ADDOP  shift 85
+	RELOP  shift 86
+	EQUAL  shift 88
+	MINUS  shift 89
+	THEN  shift 177
+	.  error
+
+
+state 176
+	stmt1 : FOR name ASSIGN expr TO expr DO . stmts END  (42)
+	line : .  (34)
+
+	IMPOSSIBLE  shift 38
+	IDENT  reduce 34
+	SEMI  reduce 34
+	END  reduce 34
+	IF  reduce 34
+	RETURN  reduce 34
+	WHILE  reduce 34
+	REPEAT  reduce 34
+	FOR  reduce 34
+	CASE  reduce 34
+
+	stmts  goto 178
+	stmt_list  goto 40
+	stmt  goto 41
+	line  goto 42
+
+
+state 177
+	elses : ELSIF line expr THEN . stmts elses  (46)
+	line : .  (34)
+
+	IMPOSSIBLE  shift 38
+	IDENT  reduce 34
+	SEMI  reduce 34
+	ELSE  reduce 34
+	END  reduce 34
+	IF  reduce 34
+	RETURN  reduce 34
+	WHILE  reduce 34
+	REPEAT  reduce 34
+	FOR  reduce 34
+	ELSIF  reduce 34
+	CASE  reduce 34
+
+	stmts  goto 179
+	stmt_list  goto 40
+	stmt  goto 41
+	line  goto 42
+
+
+state 178
+	stmt1 : FOR name ASSIGN expr TO expr DO stmts . END  (42)
+
+	END  shift 180
+	.  error
+
+
+state 179
+	elses : ELSIF line expr THEN stmts . elses  (46)
+	elses : .  (44)
+
+	ELSE  shift 158
+	ELSIF  shift 159
+	END  reduce 44
+
+	elses  goto 181
+
+
+state 180
+	stmt1 : FOR name ASSIGN expr TO expr DO stmts END .  (42)
+
+	.  reduce 42
+
+
+state 181
+	elses : ELSIF line expr THEN stmts elses .  (46)
+
+	.  reduce 46
+
+
+50 terminals, 38 nonterminals
+89 grammar rules, 182 states

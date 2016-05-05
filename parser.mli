@@ -1,6 +1,8 @@
 type token =
   | IDENT of (string)
   | NUMBER of (int)
+  | TRUE
+  | FALSE
   | MAIN
   | CLASS
   | EXTENDS

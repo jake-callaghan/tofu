@@ -232,9 +232,6 @@ inst JGTZ S             S1 {if ($1.i > 0) jump($a);}
 inst JLEQZ S            S1 {if ($1.i <= 0) jump($a);}
 inst JGEQZ S            S1 {if ($1.i >= 0) jump($a);}
 
-equiv JUMPF R           {JEQZ $a}
-equiv JUMPT R           {JNEQZ $a}
-
 equiv JLTZ R            {PUSH 0, JLT $a}
 equiv JGTZ R            {PUSH 0, JGT $a}
 equiv JLEQZ R           {PUSH 0, JLEQ $a}

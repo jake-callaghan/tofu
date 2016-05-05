@@ -65,6 +65,7 @@ and expr_desc =
 (** |expr| type representing expressible values *)
 and expr =
     Number of int
+  | Boolean of bool
   | Variable of variable_desc
   | NewObject of string
   | Call of expr_desc * string * expr_desc list
@@ -156,6 +157,10 @@ let fStrOpt o = match o with
 | Some s -> fStr ("="^s)
 | None   -> fStr "=None"
 
+let fBool o = match o with
+| true -> fStr "true"
+| false -> fStr "false"
+
 let fKindOpt o =
   let str = match o with
   | Some Object -> "Object"
@@ -174,13 +179,15 @@ let fVarDesc vd =
 
 let rec fExprDesc ed = match ed.expr_guts with
       Number n ->
-        fMeta "Number_$" [fNum n; fStrOpt ed.expr_type]
+        fMeta "Number_($,$)" [fNum n; fStrOpt ed.expr_type]
+    | Boolean b ->
+        fMeta "Boolean_($,$)" [fBool b; fStrOpt ed.expr_type]
     | Variable vd ->
         fVarDesc vd
     | NewObject cname ->
-        fMeta "New_$" [fStr cname; fStrOpt ed.expr_type]
+        fMeta "New_($,$)" [fStr cname; fStrOpt ed.expr_type]
     | Call (ed, meth, eds) ->
-        fMeta "Call_($, $, $)" [fExprDesc ed; fStr meth; fList(fExprDesc) eds; fStrOpt ed.expr_type]
+        fMeta "Call_($, $, $, $)" [fExprDesc ed; fStr meth; fList(fExprDesc) eds; fStrOpt ed.expr_type]
 
 let rec fStmt =
   function
@@ -191,7 +198,7 @@ let rec fStmt =
     | UnitCall (ed, meth, eds) ->
         fMeta "Call_($, $, $)" [fExprDesc ed; fStr meth; fList(fExprDesc) eds]
     | LocalVarDecl (vd,t) ->
-        fMeta "LocalVarDecl_($, $)" [fStr vd.variable_name; fStr t; fStrOpt vd.variable_type]
+        fMeta "LocalVarDecl_($, $, $)" [fStr vd.variable_name; fStr t; fStrOpt vd.variable_type]
     | AssignStmt (x, ed) ->
         fMeta "Assign_($, $)" [fStr x; fExprDesc ed]
     | ReturnStmt ed ->

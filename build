@@ -15,13 +15,13 @@ ocamllex lexer.mll
 echo "[creating parser]"
 ocamlyacc parser.mly
 
-ocamlc -c print.mli source.mli keiko.mli tree.mli env.mli typecheck.mli parser.mli kgen.mli
+ocamlc -c print.mli source.mli keiko.mli tree.mli env.mli lib.mli typecheck.mli parser.mli kgen.mli
 
 echo "[compiling source files]"
-ocamlc -c -w -10 -w -3 -w -26 print.ml source.ml keiko.ml lexer.ml tree.ml errors.ml object.ml integer.ml boolean.ml env.ml typecheck.ml parser.ml kgen.ml
+ocamlc -c -w -10 -w -3 -w -26 print.ml source.ml keiko.ml lexer.ml tree.ml errors.ml object.ml integer.ml boolean.ml env.ml lib.ml object_methods.ml integer_methods.ml boolean_methods.ml typecheck.ml parser.ml kgen.ml
 ocamlc -c tofuc.ml
 
 echo "[building executable]"
-ocamlc -o tofuc print.cmo source.cmo keiko.cmo tree.cmo errors.cmo object.cmo boolean.cmo integer.cmo env.cmo typecheck.cmo lexer.cmo parser.cmo kgen.cmo tofuc.cmo
+ocamlc -o tofuc print.cmo source.cmo keiko.cmo tree.cmo errors.cmo object.cmo boolean.cmo integer.cmo env.cmo lib.cmo object_methods.cmo integer_methods.cmo boolean_methods.cmo typecheck.cmo lexer.cmo parser.cmo kgen.cmo tofuc.cmo
 
 echo "[finished]"

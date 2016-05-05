@@ -1,5 +1,5 @@
 (* tofu/object.ml *)
-(* this module contains everything to implement the Object tofu library class *)
+(* this module contains the semantic interface of the Object tofu library class *)
 
 open Tree
 

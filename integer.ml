@@ -1,5 +1,5 @@
 (* tofu/integer.ml *)
-(* this module contains everything to implement the integer tofu library class *)
+(* this module contains the semantic interface for the Integer tofu library class *)
 
 open Object
 open Tree
@@ -140,7 +140,7 @@ let integer_vtable = {
 	address = -1;
 	methods = integer_methods;
 };;
- 
+
 (* |integer_desc| -- a class_desc representing the integer type *)
 let integer_desc = {
 	class_name = "Integer";
