@@ -17,4 +17,5 @@ val is_subclass : string -> string -> bool
 val add_method : class_desc -> method_desc -> unit
 val find_method : class_desc -> string -> method_desc
 
+
 val find_instance_var : class_desc -> string -> variable_desc

@@ -3,6 +3,7 @@ type token =
   | NUMBER of (int)
   | TRUE
   | FALSE
+  | THIS
   | MAIN
   | CLASS
   | EXTENDS

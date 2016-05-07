@@ -47,7 +47,6 @@ and variable_desc =
 
 (** |var| **)
 and var_kind =
-    Object  (* a globally defined object of type cname *)
   | Field   (* the field of a class *)
   | Local   (* a variable defined within a method *)
   | Arg     (* a variable that was passed as a parameter to a method *)
@@ -64,7 +63,8 @@ and expr_desc =
 
 (** |expr| type representing expressible values *)
 and expr =
-    Number of int
+  | This
+  | Number of int
   | Boolean of bool
   | Variable of variable_desc
   | NewObject of string
@@ -163,7 +163,6 @@ let fBool o = match o with
 
 let fKindOpt o =
   let str = match o with
-  | Some Object -> "Object"
   | Some Field  -> "Field"
   | Some Local  -> "Local"
   | Some Arg    -> "Arg"
@@ -178,7 +177,9 @@ let fVarDesc vd =
   fMeta "Variable($,$,$,$)" [fStr vd.variable_name; fStrOpt vd.variable_type; fKindOpt vd.variable_kind; fInt vd.offset]
 
 let rec fExprDesc ed = match ed.expr_guts with
-      Number n ->
+    | This ->
+        fMeta "This_($)" [fStrOpt ed.expr_type]
+    | Number n ->
         fMeta "Number_($,$)" [fNum n; fStrOpt ed.expr_type]
     | Boolean b ->
         fMeta "Boolean_($,$)" [fBool b; fStrOpt ed.expr_type]

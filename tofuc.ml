@@ -41,7 +41,7 @@ let main () =
   end;
   *)
 
-  Kgen.translate prog;
+  (*Kgen.translate prog;*)
   exit 0
 
 let ppc = main ()

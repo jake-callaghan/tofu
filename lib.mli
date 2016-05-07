@@ -14,7 +14,7 @@ val integer_desc : class_desc
 val boolean_desc : class_desc
 
 val integer_value_offset : int
-val boolean_value_offset : int 
+val boolean_value_offset : int
 
 (** |gen_object| -- generates code to instantiate an object of type cname *)
 val gen_object : string -> code

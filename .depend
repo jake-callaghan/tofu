@@ -38,10 +38,8 @@ print.cmi :
 source.cmo : print.cmi source.cmi
 source.cmx : print.cmx source.cmi
 source.cmi : print.cmi
-tofuc.cmo : typecheck.cmi tree.cmi source.cmi print.cmi parser.cmi lexer.cmo \
-    kgen.cmi
-tofuc.cmx : typecheck.cmx tree.cmx source.cmx print.cmx parser.cmx lexer.cmx \
-    kgen.cmx
+tofuc.cmo : typecheck.cmi tree.cmi source.cmi print.cmi parser.cmi lexer.cmo
+tofuc.cmx : typecheck.cmx tree.cmx source.cmx print.cmx parser.cmx lexer.cmx
 tree.cmo : print.cmi keiko.cmi tree.cmi
 tree.cmx : print.cmx keiko.cmx tree.cmi
 tree.cmi : keiko.cmi

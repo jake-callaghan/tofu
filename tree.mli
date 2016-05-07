@@ -42,12 +42,11 @@ and variable_desc =
   { variable_name : string;                   (* the variables' name *)
     mutable variable_type : string option;    (* the variables' static type *)
     mutable variable_kind : var_kind option;  (* the type of reference this is *)
-    mutable offset : int;                     (* offset if local, arg or a field *)
+    mutable offset : int;                     (* offset w.r.t local, arg or a class field *)
   }
 
 (** |var| **)
 and var_kind =
-    Object  (* a globally defined object *)
   | Field   (* the field of a class *)
   | Local   (* a variable defined within a method *)
   | Arg     (* a variable that was passed as a parameter to a method *)
@@ -55,7 +54,7 @@ and var_kind =
 (** |expr_desc| *)
 and expr_desc =
   { expr_guts : expr;                       (* the actual expression *)
-    mutable expr_type : string option; (* the type of the expression *)
+    mutable expr_type : string option;      (* the annotated type of the expression *)
   }
 
 (***********************)
@@ -64,7 +63,8 @@ and expr_desc =
 
 (** |expr| type representing expressible values *)
 and expr =
-    Number of int
+  | This
+  | Number of int
   | Boolean of bool
   | Variable of variable_desc
   | NewObject of string

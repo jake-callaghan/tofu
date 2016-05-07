@@ -23,6 +23,7 @@ let method_was_checked cname mname =
 (* check and annotate an expression descriptor found in a particular mdesc.body *)
 let rec check_expr mdesc edesc =
   match edesc.expr_guts with
+	  This -> let cname = (unwrap mdesc.defining_class).class_name in edesc.expr_type <- Some cname
   | Number n -> edesc.expr_type <- Some "Integer"
 	| Boolean b -> edesc.expr_type <- Some "Boolean"
   | Variable vdesc ->
@@ -87,18 +88,23 @@ let rec check_stmt mdesc body =
 		if (List.length arg_edescs <> mdesc2.number_of_formals) then argumentError ("Wrong number of arguments in call to method"^(unwrap mdesc2.defining_class).class_name^"."^mname)
 		else let arg_types = List.map (get_expr_type mdesc) arg_edescs in
    		     let f argtype (Formal (fname,ftype)) = if not (is_subclass argtype ftype) then argumentError ("The expression supplied as argument "^fname^" is not of type "^ftype) else () in
-			 List.iter2 f arg_types mdesc2.formals; (); print_string ("marker 5\n");
+			 List.iter2 f arg_types mdesc2.formals; ();
 	| LocalVarDecl (vdesc,vtype) ->
 		(* is this variable already declared within the method? *)
 		begin try let vd = List.find (fun localvd -> (localvd.variable_name = vdesc.variable_name)) mdesc.locals
 			  in variableNameError ("Variable "^vd.variable_name^" is already declared locally twice in method "^methstr)
 		with Not_found ->
-			(* is the static type a defined class? *)
-			find_class vtype;
-			(* annotate the descriptor and add update the method's list of local vars *)
-			vdesc.variable_type <- Some vtype;
-			vdesc.variable_kind <- Some Local;
-			mdesc.locals <- List.append mdesc.locals [vdesc];
+			(* does this variable use a parameters name? *)
+			let ftyper (Formal (fname,ftype)) = ftype in
+			try let fm = List.find (fun (Formal (fname,ftype)) -> fname = vdesc.variable_name) mdesc.formals
+					in variableNameError ("Variable "^vdesc.variable_name^" is also an argument name in method "^methstr)
+			with Not_found ->
+				(* is the static type a defined class? *)
+				find_class vtype;
+				(* annotate the descriptor and add update the method's list of local vars *)
+				vdesc.variable_type <- Some vtype;
+				vdesc.variable_kind <- Some Local;
+				mdesc.locals <- List.append mdesc.locals [vdesc];
 		end
 	| AssignStmt (vname, edesc) ->
 		(* is the vname associated to a declared variable? *)

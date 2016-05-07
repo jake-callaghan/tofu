@@ -6,7 +6,6 @@ open Keiko
 open Env
 
 (** sizeof functions *)
-
 let sizeof_object cdesc =
   (* sizeof storing instance variable addresses + vtable address *)
   List.fold_left (fun s vd -> s+4) 4 cdesc.variables

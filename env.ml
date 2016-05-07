@@ -60,6 +60,9 @@ let find_instance_var cdesc vname =
 	try List.find (fun vd -> vd.variable_name = vname) vdescs
     with Not_found -> variableNameError ("Varibale "^cdesc.class_name^"."^vname^" not found.");;
 
+
+
+
 (*******************************)
 (* method descriptor functions *)
 (*******************************)

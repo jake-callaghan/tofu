@@ -17,6 +17,7 @@ rule token = parse
 	| "Main"			{ MAIN }
 	| "class"			{ CLASS }
 	| "extends"		{ EXTENDS }
+	| "this"			{ THIS }
 	| "var"				{ VAR }
 	| "def"				{ DEF }
 	| "return" 		{ RETURN }
