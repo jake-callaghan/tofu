@@ -213,7 +213,7 @@ let yyact = [|
     let _5 = (Parsing.peek_val __caml_parser_env 0 : 'class_decl_list) in
     Obj.repr(
 # 24 "parser.mly"
-                                        ( Program (MainBody(_3), _5) )
+                                        ( Program ((methodDesc "main" "-" [] _3), _5) )
 # 218 "parser.ml"
                : Tree.program))
 ; (fun __caml_parser_env ->

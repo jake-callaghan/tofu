@@ -74,5 +74,16 @@ and gen_cond mdesc edesc tlab flab = SEQ [
   JUMP tlab;
 ]
 
+(** |gen_method| -- gen code for a method's body *)
+let gen_method mdesc = mdesc.code <- Keiko.canon (gen_stmt mdesc mdesc.body)
+(** |gen_vtable| -- gen code for all methods in the vtable *)
+let gen_vtable vt = List.iter gen_method vt.methods
+(** |gen_class| -- gen code for a class *)
+let gen_class cdesc = gen_vtable cdesc.method_table
 (* |translate| -- generate code for the whole program *)
-let translate p = ()
+let translate (Program (main_mdesc,classDecls)) =
+  let cdescs = List.map (fun (ClassDecl (cd,fd)) -> cd) classDecls in
+  (* generate code for each class *)
+  List.iter gen_class cdescs;
+  (* generate code for the main method *)
+  gen_method main_mdesc;

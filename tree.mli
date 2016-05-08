@@ -33,7 +33,7 @@ and method_desc =
     number_of_formals : int;                     (* the number of formal parameters required *)
     formals : formal list;                       (* the formal parameters *)
     body : stmt;                                 (* the method's body of statements *)
-    code : Keiko.code;                           (* allows library methods to be written directly in Keiko *)
+    mutable code : Keiko.code;                   (* keiko code *)
     mutable vtable_index : int;                  (* the index of this method in the vtable s.t. offset := 4 * vtable_index *)
     mutable locals : variable_desc list;         (* variable descriptors of this method's locally defined vars *)
   }
@@ -94,9 +94,7 @@ and formal = Formal of string * string
 
 and class_decl = ClassDecl of class_desc * feature_decl list
 
-and main_body = MainBody of stmt
-
-type program = Program of main_body * class_decl list
+type program = Program of method_desc * class_decl list
 
 (***************************)
 (* descriptor constructors *)

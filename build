@@ -2,8 +2,6 @@
 
 echo "===== BUILDING TOFU COMPILER ====="
 
-echo "[cleaning directory]"
-rm -f *.cm*
 rm -f .depend
 
 echo "[generating dependendcies]"

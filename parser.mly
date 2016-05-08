@@ -21,7 +21,7 @@
 %%
 
 program :
-	MAIN LCURL stmts RCURL class_decl_list { Program (MainBody($3), $5) };
+	MAIN LCURL stmts RCURL class_decl_list { Program ((methodDesc "main" "-" [] $3), $5) };
 
 /********* Declerations **********/
 

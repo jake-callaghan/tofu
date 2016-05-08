@@ -184,16 +184,14 @@ let check_methods cdesc =
 	) cdesc.method_table.methods;;
 
 (* check the main sequence of statements *)
-let check_main body =
-	(* wrap the body in method_descriptor *)
-	let mdesc = methodDesc "main" "-" [] body in
+let check_main mdesc =
 	(* the main 'method' should not return anything *)
-	if check_return body then semanticError "Main body should not return a value" else
+	if check_return mdesc.body then semanticError "Main body should not return a value" else
 	(* check the body's statements *)
-	check_stmt mdesc body;;
+	check_stmt mdesc mdesc.body;;
 
 (** |annotate| -- check ASTs for type errors and flesh out descriptors *)
-let annotate (Program (MainBody body,classDecls)) verboseMode =
+let annotate (Program (main_mdesc,classDecls)) verboseMode =
 	verbose := verboseMode;
 
 	(* set library methods to 'checked' *)
@@ -221,4 +219,4 @@ let annotate (Program (MainBody body,classDecls)) verboseMode =
 	if (!verbose) then print_string "---checking the main method---\n";
 
 	(* check the main method *)
-	check_main body;;
+	check_main main_mdesc;;
