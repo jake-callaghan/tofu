@@ -21,7 +21,6 @@ rule token = parse
 	| "var"				{ VAR }
 	| "def"				{ DEF }
 	| "return" 		{ RETURN }
-	| "print" 		{ PRINT }
 	| "new"				{ NEW }
 	| "while"			{ WHILE }
 	| "if"				{ IF }

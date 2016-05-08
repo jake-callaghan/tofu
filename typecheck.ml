@@ -128,8 +128,6 @@ let rec check_stmt mdesc body =
 		let etype = get_expr_type mdesc edesc in
 		if (not (is_subclass etype "Boolean")) then (semanticError ("Guard expression of type Boolean is required in "^methstr^", but "^etype^" was given"))
 		else check_stmt mdesc body2
-	| PrintStmt edesc ->
-	  let etype = get_expr_type mdesc edesc in ()
 	| Newline -> ();;
 
 (* returns true if the sequence of statements has a return statement *)

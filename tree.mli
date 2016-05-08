@@ -81,7 +81,6 @@ and stmt =
   | ReturnStmt of expr_desc
   | IfStmt of expr_desc * stmt * stmt
   | WhileStmt of expr_desc * stmt
-  | PrintStmt of expr_desc
   | Newline
 
 (** declerative types that define features of classes (vars and methods), classes and the main *)

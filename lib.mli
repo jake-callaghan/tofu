@@ -17,3 +17,6 @@ val gen_boolean : bool -> code
 
 val add_library_desc : (string * class_desc) -> unit
 val library_descs : unit -> (string * class_desc) list
+
+val boolean_value_offset : int
+val integer_value_offset : int

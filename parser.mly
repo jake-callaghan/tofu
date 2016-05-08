@@ -7,7 +7,7 @@
 /** decleratives */
 %token 						MAIN CLASS EXTENDS NEW VAR DEF
 /** statements */
-%token 						WHILE IF ELSE PRINT LCURL RCURL ASSIGN RETURN
+%token 						WHILE IF ELSE LCURL RCURL ASSIGN RETURN
 /** punctuation */
 %token						DOT COMMA SEMI COLON EOF BADTOK NEWLINE LBRAC RBRAC
 /** main entry point */
@@ -69,7 +69,6 @@ stmt :
 	| IF LBRAC expr RBRAC LCURL stmts RCURL															{ IfStmt ($3, $6, Skip) }
 	| IF LBRAC expr RBRAC LCURL stmts RCURL ELSE LCURL stmts RCURL 			{ IfStmt($3, $6, $10) }
 	| WHILE LBRAC expr RBRAC LCURL stmts RCURL 													{ WhileStmt ($3, $6) }
-	| PRINT LBRAC expr RBRAC    																				{ PrintStmt ($3) }
 	| NEWLINE 																													{ Newline }
 	| expr DOT IDENT args 																							{ UnitCall ($1, $3, $4) };
 	| IDENT args																												{ UnitCall (exprDesc This, $1, $2)}  /* implicit this.method(args) call */

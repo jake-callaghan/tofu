@@ -10,8 +10,8 @@ integer.cmx : tree.cmx object.cmx lib.cmx keiko.cmx
 keiko.cmo : tree.cmi source.cmi print.cmi keiko.cmi
 keiko.cmx : tree.cmx source.cmx print.cmx keiko.cmi
 keiko.cmi : print.cmi
-kgen.cmo : kgen.cmi
-kgen.cmx : kgen.cmi
+kgen.cmo : tree.cmi lib.cmi keiko.cmi env.cmi kgen.cmi
+kgen.cmx : tree.cmx lib.cmx keiko.cmx env.cmx kgen.cmi
 kgen.cmi : tree.cmi
 lexer.cmo : tree.cmi source.cmi parser.cmi
 lexer.cmx : tree.cmx source.cmx parser.cmx

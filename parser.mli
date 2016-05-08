@@ -13,7 +13,6 @@ type token =
   | WHILE
   | IF
   | ELSE
-  | PRINT
   | LCURL
   | RCURL
   | ASSIGN
