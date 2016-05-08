@@ -364,7 +364,7 @@ let yyact = [|
     let _3 = (Parsing.peek_val __caml_parser_env 0 : 'expr) in
     Obj.repr(
 # 67 "parser.mly"
-                                                ( AssignStmt (_1, _3) )
+                                                ( AssignStmt ((variableDesc _1), _3) )
 # 369 "parser.ml"
                : 'stmt))
 ; (fun __caml_parser_env ->
@@ -396,7 +396,7 @@ let yyact = [|
     let _6 = (Parsing.peek_val __caml_parser_env 1 : 'stmts) in
     Obj.repr(
 # 71 "parser.mly"
-                                            ( WhileStmt (_3, _6) )
+                                                         ( WhileStmt (_3, _6) )
 # 401 "parser.ml"
                : 'stmt))
 ; (fun __caml_parser_env ->

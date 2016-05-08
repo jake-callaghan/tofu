@@ -3,9 +3,18 @@
 
 open Tree
 open Keiko
-open Env
+
+(* library code stuff *)
+
+let integer_value_offset = 4
+let boolean_value_offset = 4
+
+let library = ref []
+let library_descs () = !library
+let add_library_desc (cname,cdesc) = library := (List.append !library [(cname,cdesc)])
 
 (** sizeof functions *)
+
 let sizeof_object cdesc =
   (* sizeof storing instance variable addresses + vtable address *)
   List.fold_left (fun s vd -> s+4) 4 cdesc.variables
@@ -16,22 +25,14 @@ let sizeof_vtable vt =
 let sizeof_method mdesc =
   (List.length mdesc.locals) * 4
 
-(* library class descs and functions *)
-let object_desc = Object.object_desc
-let integer_desc = Integer.integer_desc
-let boolean_desc = Boolean.boolean_desc
-
-let integer_value_offset = (List.find (fun vd -> vd.variable_name = "value") integer_desc.variables).offset
-let boolean_value_offset = (List.find (fun vd -> vd.variable_name = "value") boolean_desc.variables).offset
-
 let gen_object cname =
-  let cdesc = find_class cname in
+  let cdesc = Env.find_class cname in
   let name = "%"^cdesc.class_name in
   let size = sizeof_object cdesc in
   SEQ [ CONST size; GLOBAL name; CONST 0; GLOBAL "_new"; PCALLW 2; ]
 
 let gen_integer n =
-  SEQ [ gen_object "Integer"; DUP; CONST n; CONST 0; GLOBAL "_swapTop2";
+  SEQ [ gen_object "Integer"; DUP; CONST n; CONST 0; GLOBAL "_swapTop2"; PCALLW 2;
         CONST integer_value_offset; BINOP PlusA; STOREW ]
 
 let gen_boolean b =
@@ -40,6 +41,7 @@ let gen_boolean b =
         value_integer;            (* pushes address of new integer object *)
         CONST 0;                  (* SL *)
         GLOBAL "_swapTop2";
+        PCALLW 2;
         CONST boolean_value_offset;
         BINOP PlusA;
         STOREW ]                   (* boolean.value <- integer *)

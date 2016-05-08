@@ -2,11 +2,11 @@ main {}
 
 class A {
 
-  def one() : Integer = {
+  def one() : Integer {
     return getX(1);
   }
 
-  def getX(x : Integer) : Integer = {
+  def getX(x : Integer) : Integer {
     var y : Integer;
     y = new Integer;
     y = x;

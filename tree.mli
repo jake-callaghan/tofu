@@ -33,6 +33,7 @@ and method_desc =
     number_of_formals : int;                     (* the number of formal parameters required *)
     formals : formal list;                       (* the formal parameters *)
     body : stmt;                                 (* the method's body of statements *)
+    code : Keiko.code;                           (* allows library methods to be written directly in Keiko *)
     mutable vtable_index : int;                  (* the index of this method in the vtable s.t. offset := 4 * vtable_index *)
     mutable locals : variable_desc list;         (* variable descriptors of this method's locally defined vars *)
   }
@@ -76,7 +77,7 @@ and stmt =
   | Seq of stmt list
   | UnitCall of expr_desc * string * expr_desc list
   | LocalVarDecl of variable_desc * string
-  | AssignStmt of string * expr_desc
+  | AssignStmt of variable_desc * expr_desc
   | ReturnStmt of expr_desc
   | IfStmt of expr_desc * stmt * stmt
   | WhileStmt of expr_desc * stmt

@@ -2,6 +2,7 @@
 
 open Tree
 open Env
+open Lib
 open Hashtbl
 open Errors
 
@@ -106,18 +107,15 @@ let rec check_stmt mdesc body =
 				vdesc.variable_kind <- Some Local;
 				mdesc.locals <- List.append mdesc.locals [vdesc];
 		end
-	| AssignStmt (vname, edesc) ->
-		(* is the vname associated to a declared variable? *)
-		let vdesc =
-			(* locally defined? *)
-			try List.find (fun localvd -> localvd.variable_name = vname) mdesc.locals
-			(* is vname a class field? *)
-			with Not_found -> find_instance_var (unwrap mdesc.defining_class) vname
-		in
+	| AssignStmt (vdesc, edesc) ->
+		(* does this vdesc correspond to a valid variable? if so annotate and check RHS type *)
+		let vdesc0 = try List.find (fun vd -> vd.variable_name = vdesc.variable_name) mdesc.locals 	(* method local? *)
+								 with Not_found -> find_instance_var (unwrap mdesc.defining_class) vdesc.variable_name  (* class field? *)
+		in vdesc.variable_type <- vdesc0.variable_type; vdesc.variable_kind <- vdesc0.variable_kind; vdesc.offset <- vdesc0.offset;
 		(* is the RHS a subtype of the LHS? *)
 		let etype = get_expr_type mdesc edesc in
 		if is_subclass etype (unwrap vdesc.variable_type) then ()
-		else semanticError ("Cannot assign expression of type "^etype^" to variable "^vname^" of type "^(unwrap vdesc.variable_type)^" in method "^methstr)
+		else semanticError ("Cannot assign expression of type "^etype^" to variable "^vdesc.variable_name^" of type "^(unwrap vdesc.variable_type)^" in method "^methstr)
 	| ReturnStmt edesc ->
 		let etype = get_expr_type mdesc edesc in
 		if is_subclass etype mdesc.return_type then ()
@@ -205,7 +203,7 @@ let annotate (Program (MainBody body,classDecls)) verboseMode =
 		List.iter (fun mdesc ->
 			method_was_checked cname mdesc.method_name
 		) cdesc.method_table.methods
-	) library_descs;
+	) (library_descs ());
 
 	(* fill out the class descriptors and add to the environment *)
 	List.iter (fun (ClassDecl (cdesc,fdecls)) -> add_class cdesc fdecls) classDecls;

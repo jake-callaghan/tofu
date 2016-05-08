@@ -1,27 +1,14 @@
 (* env.ml *)
 
 open Tree;;
-open Object;;
-open Boolean;;
-open Integer;;
 open Hashtbl;;
 open Errors;;
-
-(* a list of library class names, paired with their descriptors *)
-let library_descs =
-	[("Object",object_desc);
-	 ("Boolean",boolean_desc);
-	 ("Integer",integer_desc);
-	];;
 
 (** |environment| -- a mapping from type names to class_descs in the AST *)
 type environment = (string, class_desc) Hashtbl.t
 
 (** |env| -- the semantic environment maintained throughout type-checking *)
 let env = ref (Hashtbl.create 100);;
-
-(* add library descriptors to the environment env *)
-let () = List.map (fun (cname,cdesc) -> Hashtbl.add !env cname cdesc) library_descs; ();;
 
 (* return the number of class descriptors in the current env *)
 let size () = Hashtbl.length !env;;
@@ -59,9 +46,6 @@ let find_instance_var cdesc vname =
 	let vdescs = cdesc.variables in
 	try List.find (fun vd -> vd.variable_name = vname) vdescs
     with Not_found -> variableNameError ("Varibale "^cdesc.class_name^"."^vname^" not found.");;
-
-
-
 
 (*******************************)
 (* method descriptor functions *)
