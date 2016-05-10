@@ -11,7 +11,7 @@ let boolean_value_offset = 4
 
 let library = ref []
 let library_descs () = !library
-let add_library_desc (cname,cdesc) = library := (List.append !library [(cname,cdesc)])
+let add_library_class cname cdesc = library := (List.append !library [(cname,cdesc)])
 
 (** sizeof functions *)
 

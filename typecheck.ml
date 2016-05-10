@@ -194,6 +194,9 @@ let check_main mdesc =
 let annotate (Program (main_mdesc,classDecls)) verboseMode =
 	verbose := verboseMode;
 
+	(*** add any library class desriptors descibed in Lib.ml to the Env *)
+	add_library_classes (Lib.library_descs ());
+
 	(* set library methods to 'checked' *)
 	List.iter (fun (cname,cdesc) ->
 		List.iter (fun mdesc ->

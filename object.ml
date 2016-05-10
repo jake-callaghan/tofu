@@ -5,33 +5,6 @@ open Tree
 open Keiko
 open Lib
 
-(********** Object methods' code **********)
-
-(* tests if the addresses are the same *)
-let isEqual_code =
-  let tlab = label () and exitLab = label () in SEQ [
-    LOCAL 20; LOADW;    (* push 'that' address *)
-    LOCAL 16; LOADW;    (* push 'this' address *)
-    JUMPC (Eq,tlab);    (* equal -> tlab *)
-    gen_boolean false;  (* push addr of new Boolean(false) *)
-    JUMP exitLab;
-    LABEL tlab;
-    gen_boolean true;   (* push addr of new Boolean(false) *)
-    LABEL exitLab;
-    RETURNW ]
-
-(* calls the print primitive on the address of the object *)
-let print_code = SEQ [
-    LOCAL 16; LOADW;    (* push 'this' address *)
-    CONST 0;            (* static link *)
-    GLOBAL "_print_num";
-    PCALL 1
-];;
-
-(* ... *)
-
-(****************************************)
-
 (** |isEqual_desc| -- a method_desc for the isEqual method *)
 let isEqual_desc = {
 	method_name = "isEqual";
@@ -41,8 +14,8 @@ let isEqual_desc = {
 	formals = [Formal ("that","Object")];
 	vtable_index = 0;
 	locals = [];
-	code = isEqual_code;
   body = Skip;
+  code = NOP;
 };;
 
 (** |print| -- calls the primitive print *)
@@ -55,7 +28,7 @@ let print_desc = {
 	vtable_index = 1;
 	locals = [];
   body = Skip;
-  code = print_code;
+  code = NOP;
 };;
 
 (* ... *)
@@ -71,5 +44,5 @@ let object_desc = {
 
 (* set the defining class for all method_descriptors *)
 let () = List.iter (fun md -> md.defining_class <- Some object_desc) object_desc.method_table.methods; ();;
-(* add to list of library class descriptors *)
-let () = add_library_desc ("Object",object_desc);;
+(* add this to the Lib *)
+let () = Lib.add_library_class "Object" object_desc;;

@@ -1,6 +1,7 @@
 (** tofu/kgen.ml *)
 (* this module generates code for various constructs in the ASTs *)
 
+open Errors
 open Env
 open Lib
 open Tree
@@ -82,8 +83,24 @@ let gen_vtable vt = List.iter gen_method vt.methods
 let gen_class cdesc = gen_vtable cdesc.method_table
 (* |translate| -- generate code for the whole program *)
 let translate (Program (main_mdesc,classDecls)) =
+  (* --- link library class descriptors to their method code --- *)
+  let link_lib libcdesc libmcodes =
+      List.iter (fun mdesc ->
+        let (libmethname,libmcode) =
+          try List.find (fun (mname,mcode) -> mname = mdesc.method_name) libmcodes
+          with Not_found -> compilationError ("library method "^libcdesc.class_name^"."^mdesc.method_name^" not found.")
+        in mdesc.code <- (libmcode ())
+      ) libcdesc.method_table.methods in
+
+  (* objects *)
+  link_lib Object.object_desc Object_methods.object_methods_code;
+  (* integers *)
+  link_lib Integer.integer_desc Integer_methods.integer_methods_code;
+  (* booleans *)
+  link_lib Boolean.boolean_desc Boolean_methods.boolean_methods_code;
+  (* -------------------------------------------------------------- *)
   let cdescs = List.map (fun (ClassDecl (cd,fd)) -> cd) classDecls in
-  (* generate code for each class *)
+  (* generate code for each user defined class *)
   List.iter gen_class cdescs;
   (* generate code for the main method *)
   gen_method main_mdesc;

@@ -3,6 +3,7 @@
 open Print
 open Source
 open Typecheck
+open Lib
 
 (* |main| -- main program *)
 let main () =
@@ -16,6 +17,7 @@ let main () =
   if List.length !fns <> 1 then begin
     fprintf stderr "$\n" [fStr usage]; exit 2
   end;
+
   let in_file = List.hd !fns in
   let in_chan = open_in in_file in
   Source.init in_file in_chan;
@@ -27,11 +29,18 @@ let main () =
           [fStr tok] !Lexer.lineno;
         exit 1 in
 
-  Typecheck.annotate prog true;
+  (**** perform the type checking and AST annotations ****)
+  Typecheck.annotate prog false;
 
+  (**** generate Keiko code for the AST ****)
+  Kgen.translate prog;
+
+  (**** print the resulting AST ****)
   Tree.print_tree stdout prog;
 
-
+  (**** print the resulting Keiko code ****)
+  let Tree.Program(main,cdecls) = prog in
+  Keiko.output (main.code);
 
   (* type checking
   begin try Check.annotate prog with
@@ -40,8 +49,6 @@ let main () =
         exit 1
   end;
   *)
-
-  (*Kgen.translate prog;*)
   exit 0
 
 let ppc = main ()

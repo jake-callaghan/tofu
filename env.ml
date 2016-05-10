@@ -10,6 +10,9 @@ type environment = (string, class_desc) Hashtbl.t
 (** |env| -- the semantic environment maintained throughout type-checking *)
 let env = ref (Hashtbl.create 100);;
 
+(** |add_library_class| -- add lib classes from the Lib module name/desc to the env *)
+let add_library_classes lib = List.iter (fun (cname,cdesc) -> Hashtbl.add !env cname cdesc) lib;;
+
 (* return the number of class descriptors in the current env *)
 let size () = Hashtbl.length !env;;
 

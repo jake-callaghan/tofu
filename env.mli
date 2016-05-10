@@ -4,6 +4,8 @@ open Tree
 
 type environment
 
+val add_library_classes : (string * class_desc) list -> unit
+
 val size : unit -> int
 val print: unit -> unit
 val unwrap : 'a option -> 'a

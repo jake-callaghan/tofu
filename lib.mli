@@ -15,7 +15,7 @@ val gen_integer : int -> code
 (** |gen_boolean| b -- generates code to instantiate a boolean with value b *)
 val gen_boolean : bool -> code
 
-val add_library_desc : (string * class_desc) -> unit
+val add_library_class : string -> class_desc -> unit
 val library_descs : unit -> (string * class_desc) list
 
 val boolean_value_offset : int

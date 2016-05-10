@@ -1,19 +1,19 @@
 Main {
-	
-	var tony : Dog; tony = new Dog;
-	var ricky : Puppy; ricky = new Puppy;
-	
+
+	var tony : Dog;	tony.init();
+	var ricky : Puppy; ricky.init();
+
 	while (ricky.cuteness().isGreaterThan(0)) {
 		ricky.ruinCarpet();
 	};
 
-	print(ricky.cuteness());	(* should print out 0 *)
-	print(tony.greet(ricky));	(* should print out 8 *)
+	ricky.cuteness().print();	 (* should print out 0 *)
+	tony.greet(ricky).print(); (* should print out 8 *)
 }
 
 (* a class representing an 'abstract' animal *)
 class Animal {
-	
+
 	var age : Integer;
 	var cuteness : Integer;
 
@@ -21,13 +21,13 @@ class Animal {
 		age = 0;
 		cuteness = 0;
 	}
-	
+
 	def haveBirthday() : Unit = { age = age.add(1); }
-	
+
 	def age() : Integer = { return age; }
-	
+
 	def cuteness() : Integer = { return cuteness; }
-	
+
 	def greet(a : Animal) : Integer = { return cuteness.add(a.cuteness()); }
 
 }
@@ -54,4 +54,4 @@ class Puppy extends Dog {
 		var y : Integer; y = 250;
 		cuteness = cuteness.minus(y);
 	}
-}  
+}
