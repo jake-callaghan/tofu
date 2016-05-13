@@ -8,16 +8,6 @@ open Tree
 open Keiko
 open Hashtbl
 
-(* keeps track of already generated methods
-let generated_methods = ref (Hashtbl.create 50);;
-
- has method mname with defining class cname already been generated?
-let method_already_generated cname mname =
-	try let () = Hashtbl.find !generated_methods (cname,mname) in true
-	with Not_found -> false
-
-let method_was_generated cname mname = Hashtbl.add !generated_methods (cname,mname) () *)
-
 (* push the address of this object *)
 let push_this = SEQ [LOCAL 16; LOADW]
 

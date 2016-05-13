@@ -8,26 +8,6 @@ open Errors
 
 let verbose = ref false;;
 
-(*
-let checked_methods = ref (Hashtbl.create 50);;
-let checked_variables = ref (Hashtbl.create 50);;
-
-let method_already_checked cname mname =
-	try let () = Hashtbl.find !checked_methods (cname,mname) in true
-	with Not_found -> false;;
-
-let method_was_checked cname mname =
-	if (!verbose) then print_string ("["^cname^"."^mname^"]\nOK\n");
-	Hashtbl.add !checked_methods (cname,mname) ();;
-
-let variable_already_checked cname vname =
-	try let () = Hashtbl.find !checked_variables (cname,vname) in true
-	with Not_found -> false;;
-
-let variable_was_checked cname vname =
-	if (!verbose) then print_string ("["^cname^"."^vname^"]\nOK\n");
-	Hashtbl.add !checked_variables (cname,vname) ();; *)
-
 (* check and annotate an expression descriptor found in a particular mdesc.body *)
 let rec check_expr mdesc edesc =
   match edesc.expr_guts with
@@ -172,16 +152,6 @@ let check_method mdesc =
 	if (mdesc.return_type = "Unit" && check_return mdesc.body) then semanticError ("Method "^mstr^" contains an unexpected return statement.")
 	else if (mdesc.return_type <> "Unit" && (not (check_return mdesc.body))) then semanticError ("Method "^mstr^" does not have an expected return statement.") else ();;
 
-(* check the static types of a class' fields are defined
-let check_fields cdesc =
-	let f vdesc =
-		(* inherited variable -> already checked if pcname vname already checked *)
-		let vname = vdesc.variable_name and pcname = (unwrap cdesc.parent_desc).class_name in
-		if variable_already_checked pcname vname then ()
-		else let () = print_string ("checking "^cdesc.class_name^"."^vname^"...\n"); find_class (unwrap vdesc.variable_type); () in
-		variable_was_checked cdesc.class_name vname;
-	in List.iter f cdesc.variables;; *)
-
 (* check the static types of a class' fields are well-defined *)
 let check_fields cdesc =
 	let check_field vdesc =
@@ -190,16 +160,6 @@ let check_fields cdesc =
 		(* primitive -> don't annotate *)
 		if vtype = "PRIMITIVE" then () else let x = find_class vtype in ()
 	in List.iter check_field cdesc.variables;;
-
-(* check the methods defined in cdesc
-let check_methods cdesc =
-	List.iter (fun mdesc ->
-		let pname = cdesc.parent_name in
-		let cname = cdesc.class_name and mname = mdesc.method_name in
-			(* have we checked this method already? if not -> check it! *)
-			if (method_already_checked pname mname) then () else check_method mdesc;
-			method_was_checked cname mname;
-	) cdesc.method_table.methods;; *)
 
 (* check a cdesc's methods *)
 let check_methods cdesc =
@@ -223,16 +183,6 @@ let annotate (Program (main_mdesc,classDecls)) verboseMode =
 
 	(*** add any library class desriptors descibed in Lib.ml to the Env *)
 	add_library_classes (Lib.library_descs ());
-
-	(* set library methods and fields to 'checked'
-	List.iter (fun (cname,cdesc) ->
-		List.iter (fun mdesc ->
-			method_was_checked cname mdesc.method_name
-		) cdesc.method_table.methods;
-		List.iter (fun vdesc ->
-			variable_was_checked cname vdesc.variable_name
-		) cdesc.variables;
-	) (library_descs ()); *)
 
 	(* fill out the class descriptors and add to the environment *)
 	List.iter (fun (ClassDecl (cdesc,fdecls)) -> add_class cdesc fdecls) classDecls;
