@@ -8,18 +8,25 @@ open Errors
 
 let verbose = ref false;;
 
-(* keeps track of already checked method bodies *)
-let checked_methods = ref (Hashtbl.create 100);;
+(*
+let checked_methods = ref (Hashtbl.create 50);;
+let checked_variables = ref (Hashtbl.create 50);;
 
-(* has method mname with defining class cname already been checked? *)
 let method_already_checked cname mname =
 	try let () = Hashtbl.find !checked_methods (cname,mname) in true
 	with Not_found -> false;;
 
-(* method mname has been successfully checked in cname *)
 let method_was_checked cname mname =
 	if (!verbose) then print_string ("["^cname^"."^mname^"]\nOK\n");
 	Hashtbl.add !checked_methods (cname,mname) ();;
+
+let variable_already_checked cname vname =
+	try let () = Hashtbl.find !checked_variables (cname,vname) in true
+	with Not_found -> false;;
+
+let variable_was_checked cname vname =
+	if (!verbose) then print_string ("["^cname^"."^vname^"]\nOK\n");
+	Hashtbl.add !checked_variables (cname,vname) ();; *)
 
 (* check and annotate an expression descriptor found in a particular mdesc.body *)
 let rec check_expr mdesc edesc =
@@ -78,8 +85,8 @@ get_expr_type mdesc edesc = match edesc.expr_type with
 let rec check_stmt mdesc body =
 	let methstr = if (mdesc.defining_class = None) then "MAIN" else (unwrap mdesc.defining_class).class_name^"."^mdesc.method_name in
 	match body with
-	| Skip -> ()
-	| Seq ss -> List.iter (check_stmt mdesc) ss
+	| Skip -> ();
+	| Seq ss -> List.iter (check_stmt mdesc) ss;
 	| UnitCall (edesc,mname,arg_edescs) ->
 		(* is the receiver well-defined? *)
 		let etype = get_expr_type mdesc edesc in
@@ -112,6 +119,8 @@ let rec check_stmt mdesc body =
 		let vdesc0 = try List.find (fun vd -> vd.variable_name = vdesc.variable_name) mdesc.locals 	(* method local? *)
 								 with Not_found -> find_instance_var (unwrap mdesc.defining_class) vdesc.variable_name  (* class field? *)
 		in vdesc.variable_type <- vdesc0.variable_type; vdesc.variable_kind <- vdesc0.variable_kind; vdesc.offset <- vdesc0.offset;
+		Tree.print_vdesc vdesc0;
+		Tree.print_vdesc vdesc;
 		(* is the RHS a subtype of the LHS? *)
 		let etype = get_expr_type mdesc edesc in
 		if is_subclass etype (unwrap vdesc.variable_type) then ()
@@ -148,8 +157,6 @@ let check_method mdesc =
 	List.iter (fun (Formal (pname,ptype)) ->
 		begin
 			(* is this name already used by another param? *)
-			print_string (pname^" // ");
-
 			try let p = Hashtbl.find seen pname in variableNameError ("Parameter name "^pname^" is used twice.")
 			with Not_found ->
 				(* add param the table of seen names *)
@@ -165,15 +172,26 @@ let check_method mdesc =
 	if (mdesc.return_type = "Unit" && check_return mdesc.body) then semanticError ("Method "^mstr^" contains an unexpected return statement.")
 	else if (mdesc.return_type <> "Unit" && (not (check_return mdesc.body))) then semanticError ("Method "^mstr^" does not have an expected return statement.") else ();;
 
-(* check the static types of a class' fields are defined *)
+(* check the static types of a class' fields are defined
 let check_fields cdesc =
 	let f vdesc =
-		if (!verbose) then print_string ("["^cdesc.class_name^"."^vdesc.variable_name^"]\n");
-		find_class (unwrap vdesc.variable_type);
-		if (!verbose) then print_string ("OK\n")
-	in List.iter f cdesc.variables;;
+		(* inherited variable -> already checked if pcname vname already checked *)
+		let vname = vdesc.variable_name and pcname = (unwrap cdesc.parent_desc).class_name in
+		if variable_already_checked pcname vname then ()
+		else let () = print_string ("checking "^cdesc.class_name^"."^vname^"...\n"); find_class (unwrap vdesc.variable_type); () in
+		variable_was_checked cdesc.class_name vname;
+	in List.iter f cdesc.variables;; *)
 
-(* check the methods defined in cdesc *)
+(* check the static types of a class' fields are well-defined *)
+let check_fields cdesc =
+	let check_field vdesc =
+		let vname = vdesc.variable_name and vtype = unwrap vdesc.variable_type in
+		if (!verbose && (vtype <> "PRIMITIVE")) then print_string ("checking "^cdesc.class_name^"."^vname^"...\n");
+		(* primitive -> don't annotate *)
+		if vtype = "PRIMITIVE" then () else let x = find_class vtype in ()
+	in List.iter check_field cdesc.variables;;
+
+(* check the methods defined in cdesc
 let check_methods cdesc =
 	List.iter (fun mdesc ->
 		let pname = cdesc.parent_name in
@@ -181,6 +199,15 @@ let check_methods cdesc =
 			(* have we checked this method already? if not -> check it! *)
 			if (method_already_checked pname mname) then () else check_method mdesc;
 			method_was_checked cname mname;
+	) cdesc.method_table.methods;; *)
+
+(* check a cdesc's methods *)
+let check_methods cdesc =
+	let cname = cdesc.class_name in
+	List.iter (fun mdesc ->
+		let dcname = (unwrap mdesc.defining_class).class_name in
+		(* method defined by this class -> annotate, or inherited -> already checked *)
+		if cname = dcname then check_method mdesc else ()
 	) cdesc.method_table.methods;;
 
 (* check the main sequence of statements *)
@@ -197,29 +224,32 @@ let annotate (Program (main_mdesc,classDecls)) verboseMode =
 	(*** add any library class desriptors descibed in Lib.ml to the Env *)
 	add_library_classes (Lib.library_descs ());
 
-	(* set library methods to 'checked' *)
+	(* set library methods and fields to 'checked'
 	List.iter (fun (cname,cdesc) ->
 		List.iter (fun mdesc ->
 			method_was_checked cname mdesc.method_name
-		) cdesc.method_table.methods
-	) (library_descs ());
+		) cdesc.method_table.methods;
+		List.iter (fun vdesc ->
+			variable_was_checked cname vdesc.variable_name
+		) cdesc.variables;
+	) (library_descs ()); *)
 
 	(* fill out the class descriptors and add to the environment *)
 	List.iter (fun (ClassDecl (cdesc,fdecls)) -> add_class cdesc fdecls) classDecls;
 
 	let cdescs = List.map (fun (ClassDecl (a,b)) -> a) classDecls in
 
-	if (!verbose) then print_string "---checking fields of all classes---\n";
+	if (!verbose) then print_string "-----checking fields-----\n";
 
 	(* check the fields of all classes *)
 	List.iter check_fields cdescs;
 
-	if (!verbose) then print_string "---checking the methods for each class---\n";
+	if (!verbose) then print_string "-----checking the methods-----\n";
 
 	(* check the methods for each class *)
 	List.iter check_methods cdescs;
 
-	if (!verbose) then print_string "---checking the main method---\n";
+	if (!verbose) then print_string "-----checking main method-----\n";
 
 	(* check the main method *)
 	check_main main_mdesc;;

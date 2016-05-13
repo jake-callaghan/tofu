@@ -45,7 +45,7 @@ type code =
   | UNPACK                      (* Unpack one value into two *)
   | DUP
   | POP
-
+  | SWAP
   | LINE of int
   | SEQ of code list
   | NOP
@@ -89,6 +89,7 @@ let fInst =
     | PACK ->           fStr "PACK"
     | UNPACK ->         fStr "UNPACK"
     | DUP ->            fStr "DUP 0"
+    | SWAP ->           fStr "SWAP"
     | POP ->            fStr "POP 1"
     | LINE n ->         fMeta "LINE $" [fNum n]
     | SEQ _ ->          fStr "SEQ ..."
@@ -143,6 +144,7 @@ let delta =
     | UNPACK -> (1, 2)
     | LINE _ -> (0, 0)
     | DUP -> (1, 2)
+    | SWAP -> (1,1)
     | POP -> (1, 0)
     | i -> failwith (sprintf "delta $" [fInst i])
 

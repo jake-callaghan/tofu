@@ -6,12 +6,24 @@ open Env
 open Lib
 open Tree
 open Keiko
+open Hashtbl
+
+(* keeps track of already generated methods
+let generated_methods = ref (Hashtbl.create 50);;
+
+ has method mname with defining class cname already been generated?
+let method_already_generated cname mname =
+	try let () = Hashtbl.find !generated_methods (cname,mname) in true
+	with Not_found -> false
+
+let method_was_generated cname mname = Hashtbl.add !generated_methods (cname,mname) () *)
 
 (* push the address of this object *)
 let push_this = SEQ [LOCAL 16; LOADW]
 
 (** |gen_var_addr| -- generate code to push a variable's address onto stack *)
-let gen_var_addr mdesc vdesc = match unwrap vdesc.variable_kind with
+let gen_var_addr mdesc vdesc =
+	match unwrap vdesc.variable_kind with
   | Field -> SEQ [push_this; CONST vdesc.offset; BINOP PlusA; LOADW]
   | Local | Arg -> SEQ [LOCAL vdesc.offset; LOADW]
 
@@ -20,6 +32,7 @@ let rec gen_method_call mdesc edesc2 mname arg_edescs rw =
   let argsize = (List.length arg_edescs)+1 in
   let callOp = if rw then PCALLW argsize else PCALL argsize in
   let gen_args = SEQ (List.rev_map (gen_expr mdesc) arg_edescs) in
+  (*Keiko.output (Keiko.canon gen_args);*)
   let cdesc = find_class (unwrap edesc2.expr_type) in
   let mdesc2 = find_method cdesc mname in (* the descriptor of the method being called *)
   SEQ [
@@ -28,7 +41,7 @@ let rec gen_method_call mdesc edesc2 mname arg_edescs rw =
     gen_expr mdesc edesc2;          (* var address *)
     DUP;                            (* 2x var address: 1 for lookup, 1 passed as argument *)
     LOADW;                          (* push vtable address *)
-    CONST (4*mdesc2.vtable_index);   (* offset in vtable *)
+    CONST (4*mdesc2.vtable_index);  (* offset in vtable *)
     BINOP PlusA; LOADW;             (* push method address *)
     (*--------------------------------*)
     callOp ]                        (* n args + variable's address *)
@@ -76,11 +89,22 @@ and gen_cond mdesc edesc tlab flab = SEQ [
 ]
 
 (** |gen_method| -- gen code for a method's body *)
-let gen_method mdesc = mdesc.code <- Keiko.canon (gen_stmt mdesc mdesc.body)
+let gen_method cdesc mdesc =
+	let cname = cdesc.class_name in
+  let def_cname = (unwrap mdesc.defining_class).class_name in
+  let mname = mdesc.method_name in
+	(* this class defines the method -> generate code, otherwise it's just 'inherited' *)
+	if def_cname = cname then mdesc.code <- Keiko.canon (gen_stmt mdesc mdesc.body) else ()
+
+(** |gen_main_method| -- generate code for main method's body *)
+let gen_main_method main_mdesc = main_mdesc.code <- Keiko.canon (gen_stmt main_mdesc main_mdesc.body)
+
 (** |gen_vtable| -- gen code for all methods in the vtable *)
-let gen_vtable vt = List.iter gen_method vt.methods
+let gen_vtable cdesc vt = List.iter (gen_method cdesc) vt.methods
+
 (** |gen_class| -- gen code for a class *)
-let gen_class cdesc = gen_vtable cdesc.method_table
+let gen_class cdesc = gen_vtable cdesc cdesc.method_table
+
 (* |translate| -- generate code for the whole program *)
 let translate (Program (main_mdesc,classDecls)) =
   (* --- link library class descriptors to their method code --- *)
@@ -91,7 +115,6 @@ let translate (Program (main_mdesc,classDecls)) =
           with Not_found -> compilationError ("library method "^libcdesc.class_name^"."^mdesc.method_name^" not found.")
         in mdesc.code <- (libmcode ())
       ) libcdesc.method_table.methods in
-
   (* objects *)
   link_lib Object.object_desc Object_methods.object_methods_code;
   (* integers *)
@@ -103,4 +126,4 @@ let translate (Program (main_mdesc,classDecls)) =
   (* generate code for each user defined class *)
   List.iter gen_class cdescs;
   (* generate code for the main method *)
-  gen_method main_mdesc;
+  gen_main_method main_mdesc;

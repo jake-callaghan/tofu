@@ -8,9 +8,9 @@ open Lib
 
 (** |value_desc| -- a variable descriptor that contains the state of a Boolean object *)
 let value_desc = {
-	variable_name = "value";
-	variable_type = Some "Integer";
-	variable_kind = Some Local;
+	variable_name = "_value";
+	variable_type = Some "PRIMITIVE";
+	variable_kind = Some Field;
 	offset = 4;
 }
 

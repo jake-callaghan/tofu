@@ -39,7 +39,7 @@ type code =
   | UNPACK                      (* Unpack one value into two *)
   | DUP
   | POP
-
+  | SWAP
   | LINE of int
   | SEQ of code list
   | NOP

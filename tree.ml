@@ -48,9 +48,9 @@ and variable_desc =
 
 (** |var| **)
 and var_kind =
-  | Field   (* the field of a class *)
-  | Local   (* a variable defined within a method *)
-  | Arg     (* a variable that was passed as a parameter to a method *)
+  | Field             (* the field of a class *)
+  | Local             (* a variable defined within a method *)
+  | Arg               (* a variable that was passed as a parameter to a method *)
 
 (** |expr_desc| *)
 and expr_desc =
@@ -128,6 +128,19 @@ let variableDesc n = {
   offset = -1;
 };;
 
+(* prints out a variable descriptor to stdout *)
+let print_vdesc vdesc =
+  let vn = vdesc.variable_name in
+  let vk = match vdesc.variable_kind with
+    | Some Field  -> "Field"
+    | Some Local  -> "Local"
+    | Some Arg    -> "Arg"
+    | _      -> "None" in
+  let vt = match vdesc.variable_type with
+    | Some cname -> cname
+    | _         -> "None" in
+  print_string ("[varDesc : "^vn^"  :  "^vt^"   =   "^vk^"]\n");;
+
 (* creates an unannotated expression descriptor *)
 let exprDesc e = {
   expr_guts = e;
@@ -139,7 +152,6 @@ let seq = function
   | [s] -> s
   | ss -> Seq ss;;
 
-(* Mike Spivey's Pretty printer with added tofu syntax tree constructs *)
 open Print
 
 let fTail f xs =

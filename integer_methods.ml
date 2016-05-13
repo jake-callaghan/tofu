@@ -14,7 +14,7 @@ let storeLocalValue o =
 (* printing integers *)
 let print_code () = SEQ [
   loadLocalValue 16; (* push this.value *)
-  CONST 0;      (* static link *)
+  CONST 0;           (* static link *)
   GLOBAL "_print_num";
   PCALL 1
 ]

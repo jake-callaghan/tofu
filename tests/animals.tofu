@@ -1,14 +1,5 @@
-Main {
+main {
 
-	var tony : Dog;	tony.init();
-	var ricky : Puppy; ricky.init();
-
-	while (ricky.cuteness().isGreaterThan(0)) {
-		ricky.ruinCarpet();
-	};
-
-	ricky.cuteness().print();	 (* should print out 0 *)
-	tony.greet(ricky).print(); (* should print out 8 *)
 }
 
 (* a class representing an 'abstract' animal *)

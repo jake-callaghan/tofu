@@ -7,11 +7,11 @@ open Tree
 open Lib
 
 
-(** |value|| -- a variable descriptor for the state of an integer object *)
+(** |value| -- a variable descriptor for the state of an integer object *)
 let value_desc = {
-	variable_name = "value";
-	variable_type = Some "primitve"; (* 'primitive' denotes a special case of types to be handled later on *)
-	variable_kind = Some Local;
+	variable_name = "_value";
+	variable_type = Some "PRIMITIVE";
+	variable_kind = Some Field;
 	offset = 4;
 };;
 

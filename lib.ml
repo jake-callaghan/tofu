@@ -32,16 +32,13 @@ let gen_object cname =
   SEQ [ CONST size; GLOBAL name; CONST 0; GLOBAL "_new"; PCALLW 2; ]
 
 let gen_integer n =
-  SEQ [ gen_object "Integer"; DUP; CONST n; CONST 0; GLOBAL "_swapTop2"; PCALLW 2;
-        CONST integer_value_offset; BINOP PlusA; STOREW ]
+  SEQ [ gen_object "Integer"; DUP; CONST n; SWAP; CONST integer_value_offset; BINOP PlusA; STOREW ]
 
 let gen_boolean b =
   let value_integer = if b then gen_integer 1 else gen_integer 0 in
   SEQ [ gen_object "Boolean"; DUP;(* 2 x new Boolean object address *)
         value_integer;            (* pushes address of new integer object *)
-        CONST 0;                  (* SL *)
-        GLOBAL "_swapTop2";
-        PCALLW 2;
+        SWAP;
         CONST boolean_value_offset;
         BINOP PlusA;
         STOREW ]                   (* boolean.value <- integer *)

@@ -8,7 +8,7 @@ open Errors;;
 type environment = (string, class_desc) Hashtbl.t
 
 (** |env| -- the semantic environment maintained throughout type-checking *)
-let env = ref (Hashtbl.create 100);;
+let env = ref (Hashtbl.create 50);;
 
 (** |add_library_class| -- add lib classes from the Lib module name/desc to the env *)
 let add_library_classes lib = List.iter (fun (cname,cdesc) -> Hashtbl.add !env cname cdesc) lib;;
@@ -107,18 +107,15 @@ let add_class cdesc fdecls =
 		(* find parent class' descriptor *)
 		let pdesc = find_class cdesc.parent_name in
 		(* set pointer to this descriptor *)
-		let () =
-			cdesc.parent_desc <- Some pdesc in
-		(* inherit methods in a new vtable *)
-		let vt =
-			pdesc.method_table.methods in
-		let () =
-			cdesc.method_table.methods <- (copy vt) in
+		cdesc.parent_desc <- Some pdesc;
+    (* --- inheritance --- *)
+    (* inherit methods in a new vtable *)
+		let vt = pdesc.method_table.methods in
+    cdesc.method_table.methods <- (copy vt);
 		(* inherit instance vars *)
-		let vars =
-			pdesc.variables in
-		let () =
-			cdesc.variables <- (copy vars) in
+		let vars = pdesc.variables in
+		cdesc.variables <- (copy vars);
+    (* ------------------- *)
 		(* process the features defined in this class *)
 		add_features cdesc fdecls;;
 

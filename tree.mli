@@ -104,7 +104,7 @@ val classDesc : string -> string -> class_desc
 val methodDesc : string -> string -> formal list -> stmt -> method_desc
 val variableDesc : string -> variable_desc
 val exprDesc : expr -> expr_desc
-
+val print_vdesc : variable_desc -> unit
 val seq : stmt list -> stmt
 
 (* |print_tree| -- pretty-print a tree *)

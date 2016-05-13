@@ -29,8 +29,12 @@ let main () =
           [fStr tok] !Lexer.lineno;
         exit 1 in
 
+  Tree.print_tree stdout prog;
+
   (**** perform the type checking and AST annotations ****)
-  Typecheck.annotate prog false;
+  Typecheck.annotate prog true;
+
+  Tree.print_tree stdout prog;
 
   (**** generate Keiko code for the AST ****)
   Kgen.translate prog;
