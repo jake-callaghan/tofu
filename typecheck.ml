@@ -7,6 +7,16 @@ open Hashtbl
 open Errors
 
 let verbose = ref false;;
+let arg_base = 20;; (* fp+16 = &self , so x0,x1.. in f(x0,x1,..) are found at LOCAL 20, LOCAL 24, ...*)
+
+(** return (x,i) s.t. x = xs[i] and p x = true *)
+let findi p xs =
+  let rec f i ys = begin
+    match ys with
+    | []        -> raise Not_found
+    | (y::tail) -> if p y then (y,i) else f (i+1) tail
+    end
+  in f 0 xs;;
 
 (* check and annotate an expression descriptor found in a particular mdesc.body *)
 let rec check_expr mdesc edesc =
@@ -18,22 +28,26 @@ let rec check_expr mdesc edesc =
   		begin
   		(* is this a (declared earlier) local var? *)
   		try let vd = List.find (fun localvd -> localvd.variable_name = vdesc.variable_name) mdesc.locals in
-  			vdesc.variable_kind <- Some Local;
+  			if mdesc.method_name <> "main" then vdesc.variable_kind <- Some Local else vdesc.variable_kind <- Some Global;
   			vdesc.variable_type <- vd.variable_type;
+        vdesc.offset <- vd.offset;
   			edesc.expr_type <- vd.variable_type;
   		with Not_found ->
   			(* is this a method parameter? *)
   			let ftyper (Formal (fname,ftype)) = ftype in
-  			try let fm = List.find (fun (Formal (fname,ftype)) -> fname = vdesc.variable_name) mdesc.formals in
+        (* this var should be the ith formal param in this mdesc *)
+  			try let (fm,i) = findi (fun (Formal (fname,ftype)) -> fname = vdesc.variable_name) mdesc.formals in
   				vdesc.variable_kind <- Some Arg;
   				vdesc.variable_type <- Some (ftyper fm);
+          vdesc.offset <- arg_base + (4*i);
   				edesc.expr_type <- Some (ftyper fm);
 	  		with Not_found ->
 	  		(* is this a field variable of the class? *)
 	  			let vd = find_instance_var (unwrap mdesc.defining_class) vdesc.variable_name in
 	  			vdesc.variable_kind <- Some Field;
 	  			vdesc.variable_type <- vd.variable_type;
-	  			edesc.expr_type <- vdesc.variable_type;
+          vdesc.offset <- vd.offset;
+	  			edesc.expr_type <- vdesc.variable_type
 	  	end
   | NewObject cname ->
   		(* is this a defined class? *)
@@ -63,7 +77,7 @@ get_expr_type mdesc edesc = match edesc.expr_type with
 
 (* check the statements in a method descriptor *)
 let rec check_stmt mdesc body =
-	let methstr = if (mdesc.defining_class = None) then "MAIN" else (unwrap mdesc.defining_class).class_name^"."^mdesc.method_name in
+	let methstr = if (mdesc.defining_class = None) then "Main" else (unwrap mdesc.defining_class).class_name^"."^mdesc.method_name in
 	match body with
 	| Skip -> ();
 	| Seq ss -> List.iter (check_stmt mdesc) ss;
@@ -91,7 +105,8 @@ let rec check_stmt mdesc body =
 				find_class vtype;
 				(* annotate the descriptor and add update the method's list of local vars *)
 				vdesc.variable_type <- Some vtype;
-				vdesc.variable_kind <- Some Local;
+				if mdesc.method_name <> "main" then vdesc.variable_kind <- Some Local else vdesc.variable_kind <- Some Global;
+        vdesc.offset <- (-4) * ((List.length mdesc.locals) + 1);
 				mdesc.locals <- List.append mdesc.locals [vdesc];
 		end
 	| AssignStmt (vdesc, edesc) ->
@@ -99,8 +114,6 @@ let rec check_stmt mdesc body =
 		let vdesc0 = try List.find (fun vd -> vd.variable_name = vdesc.variable_name) mdesc.locals 	(* method local? *)
 								 with Not_found -> find_instance_var (unwrap mdesc.defining_class) vdesc.variable_name  (* class field? *)
 		in vdesc.variable_type <- vdesc0.variable_type; vdesc.variable_kind <- vdesc0.variable_kind; vdesc.offset <- vdesc0.offset;
-		Tree.print_vdesc vdesc0;
-		Tree.print_vdesc vdesc;
 		(* is the RHS a subtype of the LHS? *)
 		let etype = get_expr_type mdesc edesc in
 		if is_subclass etype (unwrap vdesc.variable_type) then ()
@@ -180,8 +193,7 @@ let check_main mdesc =
 (** |annotate| -- check ASTs for type errors and flesh out descriptors *)
 let annotate (Program (main_mdesc,classDecls)) verboseMode =
 	verbose := verboseMode;
-
-	(*** add any library class desriptors descibed in Lib.ml to the Env *)
+  (* add any library class desriptors descibed in Lib.ml to the Env *)
 	add_library_classes (Lib.library_descs ());
 
 	(* fill out the class descriptors and add to the environment *)
@@ -189,17 +201,20 @@ let annotate (Program (main_mdesc,classDecls)) verboseMode =
 
 	let cdescs = List.map (fun (ClassDecl (a,b)) -> a) classDecls in
 
-	if (!verbose) then print_string "-----checking fields-----\n";
+  (* --- annotate offsets of vars and methods with the appropriate index values --- *)
+  List.iter (fun cd ->
+    (* label the field variables s.t. vdesc.offset = 4*(i+1) where vdesc = cdesc.variables[i] *)
+    List.iteri (fun i vd -> vd.offset <- 4*(i+1)) cd.variables;
+    (* label the method descriptors s.t. md.vtable_index = i where md = cdesc.method_tables.methods[i] *)
+    List.iteri (fun i md -> md.vtable_index <- i) cd.method_table.methods;
+  ) cdescs;
 
+	if (!verbose) then print_string "-----checking fields-----\n";
 	(* check the fields of all classes *)
 	List.iter check_fields cdescs;
-
 	if (!verbose) then print_string "-----checking the methods-----\n";
-
 	(* check the methods for each class *)
 	List.iter check_methods cdescs;
-
 	if (!verbose) then print_string "-----checking main method-----\n";
-
 	(* check the main method *)
-	check_main main_mdesc;;
+	check_main main_mdesc.mdesc;;

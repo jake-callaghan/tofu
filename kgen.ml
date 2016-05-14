@@ -16,6 +16,7 @@ let gen_var_addr mdesc vdesc =
 	match unwrap vdesc.variable_kind with
   | Field -> SEQ [push_this; CONST vdesc.offset; BINOP PlusA; LOADW]
   | Local | Arg -> SEQ [LOCAL vdesc.offset; LOADW]
+	| Global -> let x = ("_"^vdesc.variable_name) in GLOBAL x
 
 (** |gen_method_call| -- generate code for "edesc2.mname(arg_edescs...)" where rw = true if a word is returned *)
 let rec gen_method_call mdesc edesc2 mname arg_edescs rw =
@@ -34,6 +35,7 @@ let rec gen_method_call mdesc edesc2 mname arg_edescs rw =
     CONST (4*mdesc2.vtable_index);  (* offset in vtable *)
     BINOP PlusA; LOADW;             (* push method address *)
     (*--------------------------------*)
+		CONST 0;												(* static link *)
     callOp ]                        (* n args + variable's address *)
 
 (** |gen_expr| -- generate code for expressions *)
@@ -86,8 +88,13 @@ let gen_method cdesc mdesc =
 	(* this class defines the method -> generate code, otherwise it's just 'inherited' *)
 	if def_cname = cname then mdesc.code <- Keiko.canon (gen_stmt mdesc mdesc.body) else ()
 
-(** |gen_main_method| -- generate code for main method's body *)
-let gen_main_method main_mdesc = main_mdesc.code <- Keiko.canon (gen_stmt main_mdesc main_mdesc.body)
+(** |gen_main_method| -- generate code for main method's body and declerations of its variables *)
+let gen_main_method main_desc =
+	(* code for the body *)
+	main_desc.mdesc.code <- Keiko.canon (gen_stmt main_desc.mdesc main_desc.mdesc.body);
+	(* code for the variables declared within body *)
+	let glovars = SEQ (List.map (fun vdesc -> GLOVAR (("_"^vdesc.variable_name),4)) main_desc.mdesc.locals) in
+	main_desc.decls <- glovars
 
 (** |gen_vtable| -- gen code for all methods in the vtable *)
 let gen_vtable cdesc vt = List.iter (gen_method cdesc) vt.methods
@@ -96,8 +103,9 @@ let gen_vtable cdesc vt = List.iter (gen_method cdesc) vt.methods
 let gen_class cdesc = gen_vtable cdesc cdesc.method_table
 
 (* |translate| -- generate code for the whole program *)
-let translate (Program (main_mdesc,classDecls)) =
-  (* --- link library class descriptors to their method code --- *)
+let translate (Program (main_desc,classDecls)) =
+
+	(* --- link library class descriptors to their method code --- *)
   let link_lib libcdesc libmcodes =
       List.iter (fun mdesc ->
         let (libmethname,libmcode) =
@@ -111,9 +119,10 @@ let translate (Program (main_mdesc,classDecls)) =
   link_lib Integer.integer_desc Integer_methods.integer_methods_code;
   (* booleans *)
   link_lib Boolean.boolean_desc Boolean_methods.boolean_methods_code;
-  (* -------------------------------------------------------------- *)
-  let cdescs = List.map (fun (ClassDecl (cd,fd)) -> cd) classDecls in
-  (* generate code for each user defined class *)
+
+	(* --- generate code for each user-defined class --- *)
+	let cdescs = List.map (fun (ClassDecl (cd,fd)) -> cd) classDecls in
   List.iter gen_class cdescs;
-  (* generate code for the main method *)
-  gen_main_method main_mdesc;
+
+	(* generate code for the main method *)
+  gen_main_method main_desc

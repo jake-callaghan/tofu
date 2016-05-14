@@ -12,7 +12,6 @@ open Keiko
 
 (** |vtable| -- the method tables used to perform dynamic dispatch at runtime *)
 type vtable = {
-  mutable address : int;                   (* the assigned runtime label of this table *)
   mutable methods : method_desc list       (* the methods to be pointed to by the table at runtime *)
 }
 
@@ -46,11 +45,12 @@ and variable_desc =
     mutable offset : int;                     (* offset if local, arg or a field *)
   }
 
-(** |var| **)
+(** |var_kind| -- describes what kind of variable reference a vdesc corresponds to *)
 and var_kind =
   | Field             (* the field of a class *)
   | Local             (* a variable defined within a method *)
   | Arg               (* a variable that was passed as a parameter to a method *)
+  | Global            (* variable's in the main method *)
 
 (** |expr_desc| *)
 and expr_desc =
@@ -92,11 +92,22 @@ and formal = Formal of string * string
 
 and class_decl = ClassDecl of class_desc * feature_decl list
 
-type program = Program of method_desc * class_decl list
+and main_method_desc = {
+  mdesc : method_desc;          (* the method features of main *)
+  mutable decls : Keiko.code    (* the assembly directives for variable declerations etc *)
+}
+
+type program = Program of main_method_desc * class_decl list
 
 (***************************)
 (* descriptor constructors *)
 (***************************)
+
+(* creates a main_method_desc without any assembler directives *)
+let mainDesc md = {
+  mdesc = md;
+  decls = NOP;
+}
 
 (* creates an unannotated class descriptor *)
 let classDesc n p = {
@@ -104,7 +115,7 @@ let classDesc n p = {
   parent_name = p;
   parent_desc = None;
   variables = [];
-  method_table = { address = -1; methods = []; }
+  method_table = { methods = []; }
 };;
 
 (* creates an unannotated method decriptor *)
@@ -226,7 +237,7 @@ let rec fFormal (Formal (n,t)) =
   fMeta "Formal_($, $)" [fStr n; fStr t]
 
 let fMethodDesc md =
-  fMeta "MethDecl_($,$,$,$,$,$,$,$)" [
+  fMeta "MethDecl_($,$,$,$,$,$,$,$,$)" [
     fStr md.method_name;
     fStr md.return_type;
     fClassDescOpt md.defining_class;
@@ -234,10 +245,11 @@ let fMethodDesc md =
     fList(fFormal) md.formals;
     fInt md.vtable_index;
     fList(fVarDesc) md.locals;
-    fStmt md.body; ]
+    fStmt md.body;
+    fInst md.code; ]
 
 let fVTable vt =
-  fMeta "VTable_($,$)" [fInt vt.address; fList(fMethodDesc) vt.methods]
+  fMeta "VTable_($)" [fList(fMethodDesc) vt.methods]
 
 let rec fClass (ClassDecl (cd,fs)) =
   fMeta "ClassDecl_($, $, $, $, $)" [
@@ -247,5 +259,8 @@ let rec fClass (ClassDecl (cd,fs)) =
     fList(fVarDesc) cd.variables;
     fVTable cd.method_table ]
 
+let fMain md =
+  fMeta "Main_($,$)" [fMethodDesc md.mdesc; fInst md.decls]
+
 let print_tree fp (Program (main_mdesc,class_decls)) =
-  fgrindf fp "" "Program_($, $)" [fMethodDesc main_mdesc; fList(fClass) class_decls]
+  fgrindf fp "" "Program_($, $)" [fMain main_mdesc; fList(fClass) class_decls]

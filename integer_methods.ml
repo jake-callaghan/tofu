@@ -26,8 +26,8 @@ let op1_code op () = SEQ [
   DUP;
   loadLocalValue 16;    (* push this.value *)
   loadLocalValue 20;    (* push that.value *)
-  BINOP op;             (* pop values and push the op applied to them *)
-  CONST 0; GLOBAL "_swapTop2";
+  BINOP op;             (* pop values and push the v1+v2 *)
+  SWAP;
   CONST integer_value_offset;
   BINOP PlusA; STOREW;  (* store value in the new integer *)
   RETURNW               (* return address of new integer *)

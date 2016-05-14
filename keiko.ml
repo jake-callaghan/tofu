@@ -23,6 +23,7 @@ type op = Plus | Minus | Times | Div | Mod | Eq
 type code =
     CONST of int                (* Push constant (value) *)
   | GLOBAL of string            (* Push global address (name) *)
+  | GLOVAR of string * int      (* Declare global var (name) of size (n) bytes *)
   | LOCAL of int                (* Push local adddress (offset) *)
   | LOADW                       (* Load word *)
   | STOREW                      (* Store word *)
@@ -68,6 +69,7 @@ let fInst =
   function
       CONST x ->        fMeta "CONST $" [fNum x]
     | GLOBAL a ->       fMeta "GLOBAL $" [fStr a]
+    | GLOVAR (x, n) ->  fMeta "GLOVAR $ $" [fStr x; fNum n]
     | LOCAL n ->        fMeta "LOCAL $" [fNum n]
     | LOADW ->          fStr "LOADW"
     | STOREW ->         fStr "STOREW"
@@ -142,7 +144,7 @@ let delta =
     | BOUND _ -> (2, 1)
     | PACK -> (2, 1)
     | UNPACK -> (1, 2)
-    | LINE _ -> (0, 0)
+    | GLOVAR _ | LINE _ -> (0, 0)
     | DUP -> (1, 2)
     | SWAP -> (1,1)
     | POP -> (1, 0)

@@ -7,7 +7,7 @@ open Errors;;
 (** |environment| -- a mapping from type names to class_descs in the AST *)
 type environment = (string, class_desc) Hashtbl.t
 
-(** |env| -- the semantic environment maintained throughout type-checking *)
+(** |env| -- the semantic environment maintained throughout type-checking and code generation *)
 let env = ref (Hashtbl.create 50);;
 
 (** |add_library_class| -- add lib classes from the Lib module name/desc to the env *)
@@ -65,7 +65,7 @@ let add_method cdesc mdesc =
   	| [] -> [mdesc]
   	| (x::xs) -> if x.method_name = mdesc.method_name then mdesc :: xs else x :: insert xs
   in cdesc.method_table.methods <- insert (vt.methods);
-  mdesc.defining_class <- Some cdesc;; (* annotate the mdesc with new defining class name *)
+  mdesc.defining_class <- Some cdesc (* annotate the mdesc with new defining class name *)
 
 (** |find_method| -- try to extract a method descriptor with matching name in cdesc
   * raising Not_found expception if not found

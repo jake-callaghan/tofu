@@ -78,7 +78,6 @@ let boolean_mds = [isEqual_desc; print_desc; not_desc; and_desc; or_desc];;
 
 (** |Boolean_vtable| -- a vtable representing the methods on Booleans *)
 let boolean_vtable = {
-   address = -1;
    methods = boolean_mds;
 };;
 

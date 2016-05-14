@@ -39,7 +39,7 @@ let object_desc = {
 	parent_name = ""; (* object is the top of the class heirarchy *)
 	parent_desc = None;
 	variables = [];
-	method_table = { address = -1; methods = [isEqual_desc; print_desc]; };
+	method_table = { methods = [isEqual_desc; print_desc]; };
 };;
 
 (* set the defining class for all method_descriptors *)

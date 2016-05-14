@@ -13,13 +13,13 @@ ocamllex lexer.mll
 echo "[creating parser]"
 ocamlyacc parser.mly
 
-ocamlc -c print.mli source.mli keiko.mli tree.mli env.mli lib.mli typecheck.mli kgen.mli parser.mli
+ocamlc -c print.mli source.mli keiko.mli tree.mli env.mli lib.mli typecheck.mli kgen.mli output.mli parser.mli
 
 echo "[compiling source files]"
-ocamlc -c -w -10 -w -3 -w -26 print.ml source.ml keiko.ml lexer.ml tree.ml errors.ml env.ml lib.ml object.ml integer.ml boolean.ml typecheck.ml object_methods.ml integer_methods.ml boolean_methods.ml kgen.ml parser.ml
+ocamlc -c -w -10 -w -3 -w -26 print.ml source.ml keiko.ml lexer.ml tree.ml errors.ml env.ml lib.ml object.ml integer.ml boolean.ml typecheck.ml object_methods.ml integer_methods.ml boolean_methods.ml kgen.ml output.ml parser.ml
 ocamlc -c tofuc.ml
 
 echo "[building executable]"
-ocamlc -o tofuc print.cmo source.cmo keiko.cmo tree.cmo errors.cmo env.cmo lib.cmo object.cmo integer.cmo boolean.cmo typecheck.cmo object_methods.cmo integer_methods.cmo boolean_methods.cmo kgen.cmo lexer.cmo parser.cmo tofuc.cmo
+ocamlc -o tofuc print.cmo source.cmo keiko.cmo tree.cmo errors.cmo env.cmo lib.cmo object.cmo integer.cmo boolean.cmo typecheck.cmo object_methods.cmo integer_methods.cmo boolean_methods.cmo kgen.cmo output.cmo lexer.cmo parser.cmo tofuc.cmo
 
 echo "[finished]"

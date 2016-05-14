@@ -17,6 +17,7 @@ val op_name : op -> string
 type code =
     CONST of int                (* Push constant (value) *)
   | GLOBAL of string            (* Push global address (name) *)
+  | GLOVAR of string * int      (* Declare global var (name) of size (n) bytes *)
   | LOCAL of int                (* Push local adddress (offset) *)
   | LOADW                       (* Load word *)
   | STOREW                      (* Store word *)

@@ -12,7 +12,6 @@ open Keiko
 
 (** |vtable| -- the method tables used to perform dynamic dispatch at runtime *)
 type vtable = {
-  mutable address : int;                   (* the assigned runtime label of this table *)
   mutable methods : method_desc list       (* the methods to be pointed to by the table at runtime *)
 }
 
@@ -46,11 +45,12 @@ and variable_desc =
     mutable offset : int;                     (* offset w.r.t local, arg or a class field *)
   }
 
-(** |var| **)
+(** |var_kind| -- describes what kind of variable reference a vdesc corresponds to *)
 and var_kind =
   | Field   (* the field of a class *)
   | Local   (* a variable defined within a method *)
   | Arg     (* a variable that was passed as a parameter to a method *)
+  | Global  (* variables in the main method *)
 
 (** |expr_desc| *)
 and expr_desc =
@@ -94,12 +94,17 @@ and formal = Formal of string * string
 
 and class_decl = ClassDecl of class_desc * feature_decl list
 
-type program = Program of method_desc * class_decl list
+and main_method_desc = {
+  mdesc : method_desc;         (* the method features of main *)
+  mutable decls : Keiko.code   (* the assembly directives for variable declerations etc *)
+}
+
+type program = Program of main_method_desc * class_decl list
 
 (***************************)
 (* descriptor constructors *)
 (***************************)
-
+val mainDesc : method_desc -> main_method_desc
 val classDesc : string -> string -> class_desc
 val methodDesc : string -> string -> formal list -> stmt -> method_desc
 val variableDesc : string -> variable_desc

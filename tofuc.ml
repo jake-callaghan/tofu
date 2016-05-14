@@ -4,9 +4,11 @@ open Print
 open Source
 open Typecheck
 open Lib
+open Tree
 
 (* |main| -- main program *)
 let main () =
+  let verbose = ref false in
   let dflag = ref true in
   let optflag = ref false in
   let fns = ref [] in
@@ -29,22 +31,17 @@ let main () =
           [fStr tok] !Lexer.lineno;
         exit 1 in
 
-  Tree.print_tree stdout prog;
+  (*Tree.print_tree stdout prog;*)
 
   (**** perform the type checking and AST annotations ****)
-  Typecheck.annotate prog true;
-
-  Tree.print_tree stdout prog;
-
+  Typecheck.annotate prog false;
   (**** generate Keiko code for the AST ****)
   Kgen.translate prog;
-
   (**** print the resulting AST ****)
-  Tree.print_tree stdout prog;
+  if (!verbose) then Tree.print_tree stdout prog;
 
-  (**** print the resulting Keiko code ****)
-  let Tree.Program(main,cdecls) = prog in
-  Keiko.output (main.code);
+  Output.output prog;
+  (* List.iter (fun (mname,mcode) -> Keiko.output (mcode ())) Integer_methods.integer_methods_code; *)
 
   (* type checking
   begin try Check.annotate prog with

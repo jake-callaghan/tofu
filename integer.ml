@@ -154,7 +154,6 @@ let integer_methods = [
 
 (* |integer_vtable| -- a vtable representing methods on integers *)
 let integer_vtable = {
-	address = -1;
 	methods = integer_methods;
 };;
 
