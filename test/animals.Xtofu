@@ -1,5 +1,7 @@
 main {
-
+	var x : Integer;
+	x = 2;
+	x.print();
 }
 
 (* a class representing an 'abstract' animal *)
@@ -46,3 +48,7 @@ class Puppy extends Dog {
 		cuteness = cuteness.minus(y);
 	}
 }
+
+(*<<
+2
+>>*)

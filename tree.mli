@@ -47,10 +47,10 @@ and variable_desc =
 
 (** |var_kind| -- describes what kind of variable reference a vdesc corresponds to *)
 and var_kind =
-  | Field   (* the field of a class *)
-  | Local   (* a variable defined within a method *)
-  | Arg     (* a variable that was passed as a parameter to a method *)
-  | Global  (* variables in the main method *)
+  | Field       (* the field of a class *)
+  | Local       (* a variable defined within a method *)
+  | Arg         (* a variable that was passed as a parameter to a method *)
+  | Global      (* variables in the main method *)
 
 (** |expr_desc| *)
 and expr_desc =

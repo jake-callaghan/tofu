@@ -19,3 +19,7 @@ class Box extends Integer {
 		return value;
 	}
 }
+
+(*<<
+30
+>>*)

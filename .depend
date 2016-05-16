@@ -21,8 +21,6 @@ kgen.cmx : tree.cmx object_methods.cmx object.cmx lib.cmx keiko.cmx \
     integer_methods.cmx integer.cmx errors.cmx env.cmx boolean_methods.cmx \
     boolean.cmx kgen.cmi
 kgen.cmi : tree.cmi
-lexer.cmo : tree.cmi source.cmi parser.cmi
-lexer.cmx : tree.cmx source.cmx parser.cmx
 lib.cmo : tree.cmi keiko.cmi env.cmi lib.cmi
 lib.cmx : tree.cmx keiko.cmx env.cmx lib.cmi
 lib.cmi : tree.cmi keiko.cmi
@@ -34,19 +32,16 @@ object_methods.cmx : lib.cmx keiko.cmx
 output.cmo : tree.cmi print.cmi lib.cmi keiko.cmi errors.cmo output.cmi
 output.cmx : tree.cmx print.cmx lib.cmx keiko.cmx errors.cmx output.cmi
 output.cmi : tree.cmi
-parser.cmo : tree.cmi keiko.cmi parser.cmi
-parser.cmx : tree.cmx keiko.cmx parser.cmi
-parser.cmi : tree.cmi
 print.cmo : print.cmi
 print.cmx : print.cmi
 print.cmi :
 source.cmo : print.cmi source.cmi
 source.cmx : print.cmx source.cmi
 source.cmi : print.cmi
-tofuc.cmo : typecheck.cmi tree.cmi source.cmi print.cmi parser.cmi \
-    output.cmi lib.cmi lexer.cmo kgen.cmi
-tofuc.cmx : typecheck.cmx tree.cmx source.cmx print.cmx parser.cmx \
-    output.cmx lib.cmx lexer.cmx kgen.cmx
+tofuc.cmo : typecheck.cmi tree.cmi source.cmi print.cmi output.cmi lib.cmi \
+    kgen.cmi
+tofuc.cmx : typecheck.cmx tree.cmx source.cmx print.cmx output.cmx lib.cmx \
+    kgen.cmx
 tree.cmo : print.cmi keiko.cmi tree.cmi
 tree.cmx : print.cmx keiko.cmx tree.cmi
 tree.cmi : keiko.cmi

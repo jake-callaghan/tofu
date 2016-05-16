@@ -35,10 +35,9 @@ let main () =
 
   (**** perform the type checking and AST annotations ****)
   Typecheck.annotate prog false;
+
   (**** generate Keiko code for the AST ****)
   Kgen.translate prog;
-  (**** print the resulting AST ****)
-  if (!verbose) then Tree.print_tree stdout prog;
 
   Output.output prog;
   (* List.iter (fun (mname,mcode) -> Keiko.output (mcode ())) Integer_methods.integer_methods_code; *)
