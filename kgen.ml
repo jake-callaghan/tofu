@@ -35,8 +35,20 @@ let rec gen_method_call mdesc edesc2 mname arg_edescs rw =
     CONST (4*mdesc2.vtable_index);  (* offset in vtable *)
     BINOP PlusA; LOADW;             (* push method address *)
     (*--------------------------------*)
-		CONST 0;												(* static link *)
+    CONST 0;			    (* static link *)
     callOp ]                        (* n args + variable's address *)
+
+(** |gen_init| -- if class cname defines a method init() : Unit, then call it - otherwise NOP *
+	*             - EXPECTS OBJECT ADDR ON STACK: ONLY CALL AFTER GEN_OBJECT etc etc *)
+and gen_init cname =
+	let cdesc = find_class cname in
+	let find_method2 cdesc mname = List.find (fun md -> mname = md.method_name) cdesc.method_table.methods in 
+	try let mdesc = find_method2 cdesc "init" in
+			if mdesc.number_of_formals = 0 && mdesc.return_type = "Unit"
+			(* note we duplicate twice, so that we leave the initialised object's addres on the stack after *)
+			then SEQ [DUP; DUP; LOADW; CONST (4*mdesc.vtable_index); BINOP PlusA; LOADW; CONST 0; PCALL 1; ]
+			else NOP
+	with Not_found -> NOP
 
 (** |gen_expr| -- generate code for expressions *)
 and gen_expr mdesc edesc = match edesc.expr_guts with
@@ -44,7 +56,7 @@ and gen_expr mdesc edesc = match edesc.expr_guts with
   | Number n  -> gen_integer n
   | Boolean b -> gen_boolean b
   | Variable vdesc -> gen_var_addr mdesc vdesc
-  | NewObject cname -> gen_object cname
+  | NewObject cname -> SEQ [gen_object cname; gen_init cname]
   | Call (edesc2,mname,arg_edescs) -> gen_method_call mdesc edesc2 mname arg_edescs true
 
 (** |gen_stmt| -- generate code for statements *)
@@ -52,7 +64,7 @@ and gen_stmt mdesc body = match body with
     Skip -> NOP
   | Seq ss -> SEQ (List.map (gen_stmt mdesc) ss)
   | UnitCall (edesc,mname,arg_edescs) -> gen_method_call mdesc edesc mname arg_edescs false
-  | LocalVarDecl (vdesc,cname) -> SEQ [gen_object cname; LOCAL vdesc.offset; STOREW ]
+  | LocalVarDecl (vdesc,cname) -> SEQ [gen_object cname; gen_init cname; LOCAL vdesc.offset; STOREW ]
   | AssignStmt (vdesc,edesc) -> SEQ [gen_expr mdesc edesc; gen_var_addr mdesc vdesc; STOREW ]
   | ReturnStmt edesc -> SEQ [gen_expr mdesc edesc; RETURNW ]
   | IfStmt (edesc,tss,fss) ->
