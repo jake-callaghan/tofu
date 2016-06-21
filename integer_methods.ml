@@ -59,9 +59,17 @@ let isLessThanOrEqual_code = op2_code Leq
 let isGreaterThan_code = op2_code Gt
 let isGreaterThanOrEqual_code = op2_code Geq
 
+let init_code () = SEQ [
+  CONST 0;          (* push 0 *)
+  LOCAL 16; LOADW;  (* push this addr *)
+  CONST integer_value_offset; BINOP PlusA; (* push this._value addr *)
+  STOREW;   (* this._value = 0 *)
+]
+
 (* a list of method name * code pairs, to speed up pairing of method code with the method descriptors *)
 let integer_methods_code =
   [("isEqual",isEqual_code); ("print",print_code);
     ("add",add_code); ("minus",minus_code); ("multiply",multiply_code); ("divide",divide_code);
     ("isLessThan",isLessThan_code); ("isLessThanOrEqual",isLessThanOrEqual_code);
-    ("isGreaterThan",isGreaterThan_code); ("isGreaterThanOrEqual",isGreaterThan_code)]
+    ("isGreaterThan",isGreaterThan_code); ("isGreaterThanOrEqual",isGreaterThan_code);
+    ("init",init_code)]

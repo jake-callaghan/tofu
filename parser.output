@@ -1,0 +1,976 @@
+   0  $accept : %entry% $end
+
+   1  program : MAIN LCURL stmts RCURL class_decl_list
+
+   2  class_decl_list :
+   3                  | class_decl class_decl_list
+
+   4  class_decl : CLASS IDENT LCURL feature_decl_list RCURL
+   5             | CLASS IDENT EXTENDS IDENT LCURL feature_decl_list RCURL
+
+   6  feature_decl_list :
+   7                    | feature_decl feature_decl_list
+
+   8  feature_decl : DEF IDENT formals COLON IDENT ASSIGN LCURL stmts RCURL
+   9               | VAR IDENT COLON IDENT SEMI
+
+  10  formals : LBRAC RBRAC
+  11          | LBRAC formal_list RBRAC
+
+  12  formal_list : formal
+  13              | formal COMMA formal_list
+
+  14  formal : IDENT COLON IDENT
+
+  15  stmts : stmt_list
+
+  16  stmt_list : stmt
+  17            | stmt SEMI stmt_list
+
+  18  stmt :
+  19       | VAR IDENT COLON IDENT
+  20       | IDENT ASSIGN expr
+  21       | RETURN expr
+  22       | IF LBRAC expr RBRAC LCURL stmts RCURL
+  23       | IF LBRAC expr RBRAC LCURL stmts RCURL ELSE LCURL stmts RCURL
+  24       | WHILE LBRAC expr RBRAC LCURL stmts RCURL
+  25       | NEWLINE
+  26       | expr DOT IDENT args
+  27       | IDENT args
+
+  28  expr : THIS
+  29       | NUMBER
+  30       | TRUE
+  31       | FALSE
+  32       | IDENT
+  33       | NEW IDENT
+  34       | expr DOT IDENT args
+  35       | IDENT args
+
+  36  args : LBRAC RBRAC
+  37       | LBRAC expr_list RBRAC
+
+  38  expr_list : expr
+  39            | expr COMMA expr_list
+
+  40  %entry% : '\001' program
+
+state 0
+	$accept : . %entry% $end  (0)
+
+	'\001'  shift 1
+	.  error
+
+	%entry%  goto 2
+
+
+state 1
+	%entry% : '\001' . program  (40)
+
+	MAIN  shift 3
+	.  error
+
+	program  goto 4
+
+
+state 2
+	$accept : %entry% . $end  (0)
+
+	$end  accept
+
+
+state 3
+	program : MAIN . LCURL stmts RCURL class_decl_list  (1)
+
+	LCURL  shift 5
+	.  error
+
+
+state 4
+	%entry% : '\001' program .  (40)
+
+	.  reduce 40
+
+
+state 5
+	program : MAIN LCURL . stmts RCURL class_decl_list  (1)
+	stmt : .  (18)
+
+	IDENT  shift 6
+	NUMBER  shift 7
+	TRUE  shift 8
+	FALSE  shift 9
+	THIS  shift 10
+	NEW  shift 11
+	VAR  shift 12
+	WHILE  shift 13
+	IF  shift 14
+	RETURN  shift 15
+	NEWLINE  shift 16
+	RCURL  reduce 18
+	SEMI  reduce 18
+
+	stmts  goto 17
+	stmt_list  goto 18
+	stmt  goto 19
+	expr  goto 20
+
+
+state 6
+	stmt : IDENT . ASSIGN expr  (20)
+	stmt : IDENT . args  (27)
+	expr : IDENT .  (32)
+	expr : IDENT . args  (35)
+
+	ASSIGN  shift 21
+	LBRAC  shift 22
+	DOT  reduce 32
+
+	args  goto 23
+
+
+state 7
+	expr : NUMBER .  (29)
+
+	.  reduce 29
+
+
+state 8
+	expr : TRUE .  (30)
+
+	.  reduce 30
+
+
+state 9
+	expr : FALSE .  (31)
+
+	.  reduce 31
+
+
+state 10
+	expr : THIS .  (28)
+
+	.  reduce 28
+
+
+state 11
+	expr : NEW . IDENT  (33)
+
+	IDENT  shift 24
+	.  error
+
+
+state 12
+	stmt : VAR . IDENT COLON IDENT  (19)
+
+	IDENT  shift 25
+	.  error
+
+
+state 13
+	stmt : WHILE . LBRAC expr RBRAC LCURL stmts RCURL  (24)
+
+	LBRAC  shift 26
+	.  error
+
+
+state 14
+	stmt : IF . LBRAC expr RBRAC LCURL stmts RCURL  (22)
+	stmt : IF . LBRAC expr RBRAC LCURL stmts RCURL ELSE LCURL stmts RCURL  (23)
+
+	LBRAC  shift 27
+	.  error
+
+
+state 15
+	stmt : RETURN . expr  (21)
+
+	IDENT  shift 28
+	NUMBER  shift 7
+	TRUE  shift 8
+	FALSE  shift 9
+	THIS  shift 10
+	NEW  shift 11
+	.  error
+
+	expr  goto 29
+
+
+state 16
+	stmt : NEWLINE .  (25)
+
+	.  reduce 25
+
+
+state 17
+	program : MAIN LCURL stmts . RCURL class_decl_list  (1)
+
+	RCURL  shift 30
+	.  error
+
+
+state 18
+	stmts : stmt_list .  (15)
+
+	.  reduce 15
+
+
+state 19
+	stmt_list : stmt .  (16)
+	stmt_list : stmt . SEMI stmt_list  (17)
+
+	SEMI  shift 31
+	RCURL  reduce 16
+
+
+state 20
+	stmt : expr . DOT IDENT args  (26)
+	expr : expr . DOT IDENT args  (34)
+
+	DOT  shift 32
+	.  error
+
+
+state 21
+	stmt : IDENT ASSIGN . expr  (20)
+
+	IDENT  shift 28
+	NUMBER  shift 7
+	TRUE  shift 8
+	FALSE  shift 9
+	THIS  shift 10
+	NEW  shift 11
+	.  error
+
+	expr  goto 33
+
+
+state 22
+	args : LBRAC . RBRAC  (36)
+	args : LBRAC . expr_list RBRAC  (37)
+
+	IDENT  shift 28
+	NUMBER  shift 7
+	TRUE  shift 8
+	FALSE  shift 9
+	THIS  shift 10
+	NEW  shift 11
+	RBRAC  shift 34
+	.  error
+
+	expr  goto 35
+	expr_list  goto 36
+
+
+state 23
+	stmt : IDENT args .  (27)
+	expr : IDENT args .  (35)
+
+	RCURL  reduce 27
+	DOT  reduce 35
+	SEMI  reduce 27
+
+
+state 24
+	expr : NEW IDENT .  (33)
+
+	.  reduce 33
+
+
+state 25
+	stmt : VAR IDENT . COLON IDENT  (19)
+
+	COLON  shift 37
+	.  error
+
+
+state 26
+	stmt : WHILE LBRAC . expr RBRAC LCURL stmts RCURL  (24)
+
+	IDENT  shift 28
+	NUMBER  shift 7
+	TRUE  shift 8
+	FALSE  shift 9
+	THIS  shift 10
+	NEW  shift 11
+	.  error
+
+	expr  goto 38
+
+
+state 27
+	stmt : IF LBRAC . expr RBRAC LCURL stmts RCURL  (22)
+	stmt : IF LBRAC . expr RBRAC LCURL stmts RCURL ELSE LCURL stmts RCURL  (23)
+
+	IDENT  shift 28
+	NUMBER  shift 7
+	TRUE  shift 8
+	FALSE  shift 9
+	THIS  shift 10
+	NEW  shift 11
+	.  error
+
+	expr  goto 39
+
+
+state 28
+	expr : IDENT .  (32)
+	expr : IDENT . args  (35)
+
+	LBRAC  shift 22
+	RCURL  reduce 32
+	DOT  reduce 32
+	COMMA  reduce 32
+	SEMI  reduce 32
+	RBRAC  reduce 32
+
+	args  goto 40
+
+
+state 29
+	stmt : RETURN expr .  (21)
+	expr : expr . DOT IDENT args  (34)
+
+	DOT  shift 41
+	RCURL  reduce 21
+	SEMI  reduce 21
+
+
+state 30
+	program : MAIN LCURL stmts RCURL . class_decl_list  (1)
+	class_decl_list : .  (2)
+
+	CLASS  shift 42
+	$end  reduce 2
+
+	class_decl_list  goto 43
+	class_decl  goto 44
+
+
+state 31
+	stmt_list : stmt SEMI . stmt_list  (17)
+	stmt : .  (18)
+
+	IDENT  shift 6
+	NUMBER  shift 7
+	TRUE  shift 8
+	FALSE  shift 9
+	THIS  shift 10
+	NEW  shift 11
+	VAR  shift 12
+	WHILE  shift 13
+	IF  shift 14
+	RETURN  shift 15
+	NEWLINE  shift 16
+	RCURL  reduce 18
+	SEMI  reduce 18
+
+	stmt_list  goto 45
+	stmt  goto 19
+	expr  goto 20
+
+
+state 32
+	stmt : expr DOT . IDENT args  (26)
+	expr : expr DOT . IDENT args  (34)
+
+	IDENT  shift 46
+	.  error
+
+
+state 33
+	stmt : IDENT ASSIGN expr .  (20)
+	expr : expr . DOT IDENT args  (34)
+
+	DOT  shift 41
+	RCURL  reduce 20
+	SEMI  reduce 20
+
+
+state 34
+	args : LBRAC RBRAC .  (36)
+
+	.  reduce 36
+
+
+state 35
+	expr : expr . DOT IDENT args  (34)
+	expr_list : expr .  (38)
+	expr_list : expr . COMMA expr_list  (39)
+
+	DOT  shift 41
+	COMMA  shift 47
+	RBRAC  reduce 38
+
+
+state 36
+	args : LBRAC expr_list . RBRAC  (37)
+
+	RBRAC  shift 48
+	.  error
+
+
+state 37
+	stmt : VAR IDENT COLON . IDENT  (19)
+
+	IDENT  shift 49
+	.  error
+
+
+state 38
+	stmt : WHILE LBRAC expr . RBRAC LCURL stmts RCURL  (24)
+	expr : expr . DOT IDENT args  (34)
+
+	DOT  shift 41
+	RBRAC  shift 50
+	.  error
+
+
+state 39
+	stmt : IF LBRAC expr . RBRAC LCURL stmts RCURL  (22)
+	stmt : IF LBRAC expr . RBRAC LCURL stmts RCURL ELSE LCURL stmts RCURL  (23)
+	expr : expr . DOT IDENT args  (34)
+
+	DOT  shift 41
+	RBRAC  shift 51
+	.  error
+
+
+state 40
+	expr : IDENT args .  (35)
+
+	.  reduce 35
+
+
+state 41
+	expr : expr DOT . IDENT args  (34)
+
+	IDENT  shift 52
+	.  error
+
+
+state 42
+	class_decl : CLASS . IDENT LCURL feature_decl_list RCURL  (4)
+	class_decl : CLASS . IDENT EXTENDS IDENT LCURL feature_decl_list RCURL  (5)
+
+	IDENT  shift 53
+	.  error
+
+
+state 43
+	program : MAIN LCURL stmts RCURL class_decl_list .  (1)
+
+	.  reduce 1
+
+
+state 44
+	class_decl_list : class_decl . class_decl_list  (3)
+	class_decl_list : .  (2)
+
+	CLASS  shift 42
+	$end  reduce 2
+
+	class_decl_list  goto 54
+	class_decl  goto 44
+
+
+state 45
+	stmt_list : stmt SEMI stmt_list .  (17)
+
+	.  reduce 17
+
+
+state 46
+	stmt : expr DOT IDENT . args  (26)
+	expr : expr DOT IDENT . args  (34)
+
+	LBRAC  shift 22
+	.  error
+
+	args  goto 55
+
+
+state 47
+	expr_list : expr COMMA . expr_list  (39)
+
+	IDENT  shift 28
+	NUMBER  shift 7
+	TRUE  shift 8
+	FALSE  shift 9
+	THIS  shift 10
+	NEW  shift 11
+	.  error
+
+	expr  goto 35
+	expr_list  goto 56
+
+
+state 48
+	args : LBRAC expr_list RBRAC .  (37)
+
+	.  reduce 37
+
+
+state 49
+	stmt : VAR IDENT COLON IDENT .  (19)
+
+	.  reduce 19
+
+
+state 50
+	stmt : WHILE LBRAC expr RBRAC . LCURL stmts RCURL  (24)
+
+	LCURL  shift 57
+	.  error
+
+
+state 51
+	stmt : IF LBRAC expr RBRAC . LCURL stmts RCURL  (22)
+	stmt : IF LBRAC expr RBRAC . LCURL stmts RCURL ELSE LCURL stmts RCURL  (23)
+
+	LCURL  shift 58
+	.  error
+
+
+state 52
+	expr : expr DOT IDENT . args  (34)
+
+	LBRAC  shift 22
+	.  error
+
+	args  goto 59
+
+
+state 53
+	class_decl : CLASS IDENT . LCURL feature_decl_list RCURL  (4)
+	class_decl : CLASS IDENT . EXTENDS IDENT LCURL feature_decl_list RCURL  (5)
+
+	EXTENDS  shift 60
+	LCURL  shift 61
+	.  error
+
+
+state 54
+	class_decl_list : class_decl class_decl_list .  (3)
+
+	.  reduce 3
+
+
+state 55
+	stmt : expr DOT IDENT args .  (26)
+	expr : expr DOT IDENT args .  (34)
+
+	RCURL  reduce 26
+	DOT  reduce 34
+	SEMI  reduce 26
+
+
+state 56
+	expr_list : expr COMMA expr_list .  (39)
+
+	.  reduce 39
+
+
+state 57
+	stmt : WHILE LBRAC expr RBRAC LCURL . stmts RCURL  (24)
+	stmt : .  (18)
+
+	IDENT  shift 6
+	NUMBER  shift 7
+	TRUE  shift 8
+	FALSE  shift 9
+	THIS  shift 10
+	NEW  shift 11
+	VAR  shift 12
+	WHILE  shift 13
+	IF  shift 14
+	RETURN  shift 15
+	NEWLINE  shift 16
+	RCURL  reduce 18
+	SEMI  reduce 18
+
+	stmts  goto 62
+	stmt_list  goto 18
+	stmt  goto 19
+	expr  goto 20
+
+
+state 58
+	stmt : IF LBRAC expr RBRAC LCURL . stmts RCURL  (22)
+	stmt : IF LBRAC expr RBRAC LCURL . stmts RCURL ELSE LCURL stmts RCURL  (23)
+	stmt : .  (18)
+
+	IDENT  shift 6
+	NUMBER  shift 7
+	TRUE  shift 8
+	FALSE  shift 9
+	THIS  shift 10
+	NEW  shift 11
+	VAR  shift 12
+	WHILE  shift 13
+	IF  shift 14
+	RETURN  shift 15
+	NEWLINE  shift 16
+	RCURL  reduce 18
+	SEMI  reduce 18
+
+	stmts  goto 63
+	stmt_list  goto 18
+	stmt  goto 19
+	expr  goto 20
+
+
+state 59
+	expr : expr DOT IDENT args .  (34)
+
+	.  reduce 34
+
+
+state 60
+	class_decl : CLASS IDENT EXTENDS . IDENT LCURL feature_decl_list RCURL  (5)
+
+	IDENT  shift 64
+	.  error
+
+
+state 61
+	class_decl : CLASS IDENT LCURL . feature_decl_list RCURL  (4)
+	feature_decl_list : .  (6)
+
+	VAR  shift 65
+	DEF  shift 66
+	RCURL  reduce 6
+
+	feature_decl_list  goto 67
+	feature_decl  goto 68
+
+
+state 62
+	stmt : WHILE LBRAC expr RBRAC LCURL stmts . RCURL  (24)
+
+	RCURL  shift 69
+	.  error
+
+
+state 63
+	stmt : IF LBRAC expr RBRAC LCURL stmts . RCURL  (22)
+	stmt : IF LBRAC expr RBRAC LCURL stmts . RCURL ELSE LCURL stmts RCURL  (23)
+
+	RCURL  shift 70
+	.  error
+
+
+state 64
+	class_decl : CLASS IDENT EXTENDS IDENT . LCURL feature_decl_list RCURL  (5)
+
+	LCURL  shift 71
+	.  error
+
+
+state 65
+	feature_decl : VAR . IDENT COLON IDENT SEMI  (9)
+
+	IDENT  shift 72
+	.  error
+
+
+state 66
+	feature_decl : DEF . IDENT formals COLON IDENT ASSIGN LCURL stmts RCURL  (8)
+
+	IDENT  shift 73
+	.  error
+
+
+state 67
+	class_decl : CLASS IDENT LCURL feature_decl_list . RCURL  (4)
+
+	RCURL  shift 74
+	.  error
+
+
+state 68
+	feature_decl_list : feature_decl . feature_decl_list  (7)
+	feature_decl_list : .  (6)
+
+	VAR  shift 65
+	DEF  shift 66
+	RCURL  reduce 6
+
+	feature_decl_list  goto 75
+	feature_decl  goto 68
+
+
+state 69
+	stmt : WHILE LBRAC expr RBRAC LCURL stmts RCURL .  (24)
+
+	.  reduce 24
+
+
+state 70
+	stmt : IF LBRAC expr RBRAC LCURL stmts RCURL .  (22)
+	stmt : IF LBRAC expr RBRAC LCURL stmts RCURL . ELSE LCURL stmts RCURL  (23)
+
+	ELSE  shift 76
+	RCURL  reduce 22
+	SEMI  reduce 22
+
+
+state 71
+	class_decl : CLASS IDENT EXTENDS IDENT LCURL . feature_decl_list RCURL  (5)
+	feature_decl_list : .  (6)
+
+	VAR  shift 65
+	DEF  shift 66
+	RCURL  reduce 6
+
+	feature_decl_list  goto 77
+	feature_decl  goto 68
+
+
+state 72
+	feature_decl : VAR IDENT . COLON IDENT SEMI  (9)
+
+	COLON  shift 78
+	.  error
+
+
+state 73
+	feature_decl : DEF IDENT . formals COLON IDENT ASSIGN LCURL stmts RCURL  (8)
+
+	LBRAC  shift 79
+	.  error
+
+	formals  goto 80
+
+
+state 74
+	class_decl : CLASS IDENT LCURL feature_decl_list RCURL .  (4)
+
+	.  reduce 4
+
+
+state 75
+	feature_decl_list : feature_decl feature_decl_list .  (7)
+
+	.  reduce 7
+
+
+state 76
+	stmt : IF LBRAC expr RBRAC LCURL stmts RCURL ELSE . LCURL stmts RCURL  (23)
+
+	LCURL  shift 81
+	.  error
+
+
+state 77
+	class_decl : CLASS IDENT EXTENDS IDENT LCURL feature_decl_list . RCURL  (5)
+
+	RCURL  shift 82
+	.  error
+
+
+state 78
+	feature_decl : VAR IDENT COLON . IDENT SEMI  (9)
+
+	IDENT  shift 83
+	.  error
+
+
+state 79
+	formals : LBRAC . RBRAC  (10)
+	formals : LBRAC . formal_list RBRAC  (11)
+
+	IDENT  shift 84
+	RBRAC  shift 85
+	.  error
+
+	formal_list  goto 86
+	formal  goto 87
+
+
+state 80
+	feature_decl : DEF IDENT formals . COLON IDENT ASSIGN LCURL stmts RCURL  (8)
+
+	COLON  shift 88
+	.  error
+
+
+state 81
+	stmt : IF LBRAC expr RBRAC LCURL stmts RCURL ELSE LCURL . stmts RCURL  (23)
+	stmt : .  (18)
+
+	IDENT  shift 6
+	NUMBER  shift 7
+	TRUE  shift 8
+	FALSE  shift 9
+	THIS  shift 10
+	NEW  shift 11
+	VAR  shift 12
+	WHILE  shift 13
+	IF  shift 14
+	RETURN  shift 15
+	NEWLINE  shift 16
+	RCURL  reduce 18
+	SEMI  reduce 18
+
+	stmts  goto 89
+	stmt_list  goto 18
+	stmt  goto 19
+	expr  goto 20
+
+
+state 82
+	class_decl : CLASS IDENT EXTENDS IDENT LCURL feature_decl_list RCURL .  (5)
+
+	.  reduce 5
+
+
+state 83
+	feature_decl : VAR IDENT COLON IDENT . SEMI  (9)
+
+	SEMI  shift 90
+	.  error
+
+
+state 84
+	formal : IDENT . COLON IDENT  (14)
+
+	COLON  shift 91
+	.  error
+
+
+state 85
+	formals : LBRAC RBRAC .  (10)
+
+	.  reduce 10
+
+
+state 86
+	formals : LBRAC formal_list . RBRAC  (11)
+
+	RBRAC  shift 92
+	.  error
+
+
+state 87
+	formal_list : formal .  (12)
+	formal_list : formal . COMMA formal_list  (13)
+
+	COMMA  shift 93
+	RBRAC  reduce 12
+
+
+state 88
+	feature_decl : DEF IDENT formals COLON . IDENT ASSIGN LCURL stmts RCURL  (8)
+
+	IDENT  shift 94
+	.  error
+
+
+state 89
+	stmt : IF LBRAC expr RBRAC LCURL stmts RCURL ELSE LCURL stmts . RCURL  (23)
+
+	RCURL  shift 95
+	.  error
+
+
+state 90
+	feature_decl : VAR IDENT COLON IDENT SEMI .  (9)
+
+	.  reduce 9
+
+
+state 91
+	formal : IDENT COLON . IDENT  (14)
+
+	IDENT  shift 96
+	.  error
+
+
+state 92
+	formals : LBRAC formal_list RBRAC .  (11)
+
+	.  reduce 11
+
+
+state 93
+	formal_list : formal COMMA . formal_list  (13)
+
+	IDENT  shift 84
+	.  error
+
+	formal_list  goto 97
+	formal  goto 87
+
+
+state 94
+	feature_decl : DEF IDENT formals COLON IDENT . ASSIGN LCURL stmts RCURL  (8)
+
+	ASSIGN  shift 98
+	.  error
+
+
+state 95
+	stmt : IF LBRAC expr RBRAC LCURL stmts RCURL ELSE LCURL stmts RCURL .  (23)
+
+	.  reduce 23
+
+
+state 96
+	formal : IDENT COLON IDENT .  (14)
+
+	.  reduce 14
+
+
+state 97
+	formal_list : formal COMMA formal_list .  (13)
+
+	.  reduce 13
+
+
+state 98
+	feature_decl : DEF IDENT formals COLON IDENT ASSIGN . LCURL stmts RCURL  (8)
+
+	LCURL  shift 99
+	.  error
+
+
+state 99
+	feature_decl : DEF IDENT formals COLON IDENT ASSIGN LCURL . stmts RCURL  (8)
+	stmt : .  (18)
+
+	IDENT  shift 6
+	NUMBER  shift 7
+	TRUE  shift 8
+	FALSE  shift 9
+	THIS  shift 10
+	NEW  shift 11
+	VAR  shift 12
+	WHILE  shift 13
+	IF  shift 14
+	RETURN  shift 15
+	NEWLINE  shift 16
+	RCURL  reduce 18
+	SEMI  reduce 18
+
+	stmts  goto 100
+	stmt_list  goto 18
+	stmt  goto 19
+	expr  goto 20
+
+
+state 100
+	feature_decl : DEF IDENT formals COLON IDENT ASSIGN LCURL stmts . RCURL  (8)
+
+	RCURL  shift 101
+	.  error
+
+
+state 101
+	feature_decl : DEF IDENT formals COLON IDENT ASSIGN LCURL stmts RCURL .  (8)
+
+	.  reduce 8
+
+
+30 terminals, 16 nonterminals
+41 grammar rules, 102 states

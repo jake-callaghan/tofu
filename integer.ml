@@ -138,6 +138,18 @@ let isGreaterThanOrEqual_desc = {
 	code = NOP; body = Skip;
 };;
 
+(* this.init() : Unit *)
+let init_desc = {
+	method_name = "init";
+	defining_class = None;
+	return_type = "Unit";
+	number_of_formals = 0;
+	formals = [];
+	vtable_index= 8;
+	locals = [];
+	code = NOP; body = Skip;
+}
+
 (* |integer_methods| -- a list of method descriptors on integers *)
 let integer_methods = [
 	isEqual_desc;
@@ -150,6 +162,7 @@ let integer_methods = [
 	isLessThanOrEqual_desc;
 	isGreaterThan_desc;
 	isGreaterThanOrEqual_desc;
+	init_desc;
 ];;
 
 (* |integer_vtable| -- a vtable representing methods on integers *)

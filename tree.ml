@@ -146,6 +146,7 @@ let print_vdesc vdesc =
     | Some Field  -> "Field"
     | Some Local  -> "Local"
     | Some Arg    -> "Arg"
+    | Some Global -> "Global"
     | _      -> "None" in
   let vt = match vdesc.variable_type with
     | Some cname -> cname

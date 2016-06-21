@@ -31,13 +31,17 @@ let main () =
           [fStr tok] !Lexer.lineno;
         exit 1 in
 
-  (*Tree.print_tree stdout prog;*)
+  Tree.print_tree stdout prog;
 
   (**** perform the type checking and AST annotations ****)
   Typecheck.annotate prog false;
 
+  Tree.print_tree stdout prog;
+
   (**** generate Keiko code for the AST ****)
   Kgen.translate prog;
+
+  Tree.print_tree stdout prog;
 
   Output.output prog;
   (* List.iter (fun (mname,mcode) -> Keiko.output (mcode ())) Integer_methods.integer_methods_code; *)

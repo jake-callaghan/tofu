@@ -79,7 +79,7 @@ stmt :
 expr :
 	| THIS 									{ exprDesc This }
 	| NUMBER 								{ exprDesc (Number $1)  }
-	|	TRUE						 			{ exprDesc (Boolean true) }
+	| TRUE						 			{ exprDesc (Boolean true) }
 	| FALSE							  	{ exprDesc (Boolean false) }
 	| IDENT							   	{ exprDesc (Variable (variableDesc $1)) }
 	| NEW IDENT 						{ exprDesc (NewObject $2) }

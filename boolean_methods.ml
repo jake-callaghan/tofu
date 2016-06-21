@@ -59,7 +59,14 @@ let not_code () = let fLab = label () and exitLab = label () in SEQ [
   RETURNW;
 ];;
 
+let init_code () = SEQ [
+  loadLocalValue 16;  (* push this.value = &Integer *)
+  CONST 0;
+  CONST integer_value_offset; BINOP PlusA; (* push value address *)
+  STOREW; (* set _value._value = 0 *)
+]
+
 (* a list of method name * code pairs, to speed up pairing of method code with the method descriptors *)
 let boolean_methods_code =
   [("isEqual",isEqual_code); ("print",print_code); ("not",not_code);
-   ("and",and_code); ("or",or_code)]
+   ("and",and_code); ("or",or_code); ("init",init_code)]

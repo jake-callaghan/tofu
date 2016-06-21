@@ -74,7 +74,19 @@ let or_desc = {
 	code = NOP; body = Skip;
 };;
 
-let boolean_mds = [isEqual_desc; print_desc; not_desc; and_desc; or_desc];;
+(* this.init() : Unit *)
+let init_desc = {
+	method_name = "init";
+	defining_class = None;
+	return_type = "Unit";
+	number_of_formals = 0;
+	formals = [];
+	vtable_index= 8;
+	locals = [];
+	code = NOP; body = Skip;
+}
+
+let boolean_mds = [isEqual_desc; print_desc; not_desc; and_desc; or_desc; init_desc];;
 
 (** |Boolean_vtable| -- a vtable representing the methods on Booleans *)
 let boolean_vtable = {

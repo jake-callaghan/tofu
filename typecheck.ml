@@ -30,7 +30,7 @@ let rec check_expr mdesc edesc =
   		try let vd = List.find (fun localvd -> localvd.variable_name = vdesc.variable_name) mdesc.locals in
   			if mdesc.method_name <> "main" then vdesc.variable_kind <- Some Local else vdesc.variable_kind <- Some Global;
   			vdesc.variable_type <- vd.variable_type;
-        vdesc.offset <- vd.offset;
+                        vdesc.offset <- vd.offset;
   			edesc.expr_type <- vd.variable_type;
   		with Not_found ->
   			(* is this a method parameter? *)
@@ -39,14 +39,14 @@ let rec check_expr mdesc edesc =
   			try let (fm,i) = findi (fun (Formal (fname,ftype)) -> fname = vdesc.variable_name) mdesc.formals in
   				vdesc.variable_kind <- Some Arg;
   				vdesc.variable_type <- Some (ftyper fm);
-          vdesc.offset <- arg_base + (4*i);
+                                vdesc.offset <- arg_base + (4*i);
   				edesc.expr_type <- Some (ftyper fm);
 	  		with Not_found ->
 	  		(* is this a field variable of the class? *)
 	  			let vd = find_instance_var (unwrap mdesc.defining_class) vdesc.variable_name in
 	  			vdesc.variable_kind <- Some Field;
 	  			vdesc.variable_type <- vd.variable_type;
-          vdesc.offset <- vd.offset;
+                                vdesc.offset <- vd.offset;
 	  			edesc.expr_type <- vdesc.variable_type
 	  	end
   | NewObject cname ->
@@ -106,7 +106,7 @@ let rec check_stmt mdesc body =
 				(* annotate the descriptor and add update the method's list of local vars *)
 				vdesc.variable_type <- Some vtype;
 				if mdesc.method_name <> "main" then vdesc.variable_kind <- Some Local else vdesc.variable_kind <- Some Global;
-        vdesc.offset <- (-4) * ((List.length mdesc.locals) + 1);
+                                vdesc.offset <- (-4) * ((List.length mdesc.locals) + 1);
 				mdesc.locals <- List.append mdesc.locals [vdesc];
 		end
 	| AssignStmt (vdesc, edesc) ->

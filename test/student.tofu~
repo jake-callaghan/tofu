@@ -1,0 +1,56 @@
+main {
+
+	var ada: Student;
+	var alan: Student;
+
+	ada = new ComputerScientist;
+	alan = new Mathematician;
+
+	ada.speak();
+	alan.speak();
+
+}
+
+class Student {
+  var iq : Integer;
+
+  def init() : Unit = {
+    iq = 0;
+  }
+
+  def learn(x : Integer) : Unit = {
+    iq = iq.add(x);
+  }
+
+  def speak() : Unit = {}
+
+}
+
+class Mathematician extends Student {
+  var number : Integer;
+  def setNumber(x : Integer) : Unit = {
+    number = x;
+  }
+  def init() : Unit = {
+    iq = 130; number = 0;
+  }
+  def speak() : Unit = {
+    iq.add(number).print();
+  }
+}
+
+class ComputerScientist extends Mathematician {
+  var coding : Boolean;
+  def coding() : Boolean = { return coding; }
+  def init() : Unit = { iq = 256; number = 1024; coding = true; }
+  def speak() : Unit = {
+	var x : Integer;
+	x = number;
+        while (coding) {
+          0.print(); 1.print(); 0.print(); 
+          if (x.isGreaterThan(1)) { x = x.divide(2); }
+          else { coding = false;  }
+        }
+	coding = true;
+  }
+}

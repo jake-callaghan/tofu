@@ -1,3 +1,5 @@
+Program (Main (MethDecl (main,-,=None,0,[],-1,[],Skip,NOP),NOP), [])
+Program (Main (MethDecl (main,-,=None,0,[],-1,[],Skip,SEQ ...),SEQ ...), [])
 MODULE Main 0 0
 IMPORT Lib 0
 ENDHDR
@@ -479,6 +481,15 @@ LABEL L12
 RETURNW
 END
 
+PROC Integer.init 0 0 0
+CONST 0
+LOCAL 16
+LOADW
+CONST 4
+PLUSA
+STOREW
+END
+
 DEFINE %Integer
 WORD Integer.isEqual
 WORD Integer.print
@@ -490,6 +501,7 @@ WORD Integer.isLessThan
 WORD Integer.isLessThanOrEqual
 WORD Integer.isGreaterThan
 WORD Integer.isGreaterThanOrEqual
+WORD Integer.init
 
 PROC Boolean.isEqual 0 0 0
 LOCAL 16
@@ -760,12 +772,25 @@ LABEL L20
 RETURNW
 END
 
+PROC Boolean.init 0 0 0
+LOCAL 16
+LOADW
+CONST 4
+PLUSA
+LOADW
+CONST 0
+CONST 4
+PLUSA
+STOREW
+END
+
 DEFINE %Boolean
 WORD Boolean.isEqual
 WORD Boolean.print
 WORD Boolean.not
 WORD Boolean.and
 WORD Boolean.or
+WORD Boolean.init
 
 PROC MAIN 0 0 0
 END
